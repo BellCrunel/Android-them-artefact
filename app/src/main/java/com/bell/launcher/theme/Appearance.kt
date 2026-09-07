@@ -30,6 +30,19 @@ object Appearance {
                 background = base.background ?: "#26FFFFFF",
                 tint = null,
             )
+            IconStyle.PEBBLE -> base.copy(
+                shape = IconShape.ROUNDED,
+                cornerRadiusPercent = 46,
+                scale = 0.58f,
+                background = "#1FFFFFFF",
+                tint = null,
+            )
+            IconStyle.GLASS -> base.copy(
+                shape = IconShape.CIRCLE,
+                scale = 0.56f,
+                background = "#2BFFFFFF",
+                tint = null,
+            )
             IconStyle.MONO -> base.copy(
                 shape = IconShape.ORIGINAL,
                 scale = 0.92f,

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Bell Launcher</string>
+    <string name="app_name">Artefact Launcher</string>
     <string name="drawer_search_hint">Пошук додатків…</string>
     <string name="settings">Налаштування</string>
+    <string name="appearance">Вигляд</string>
     <string name="themes">Теми</string>
     <string name="widgets">Віджети</string>
     <string name="wallpaper">Шпалери</string>

@@ -56,10 +56,16 @@ fun AppIconImage(
     val loader = LocalIconLoader.current
     val themeId = LocalLauncherTheme.current.id
     val px = with(LocalDensity.current) { size.roundToPx() }
-    var image by remember(packageName, activityName, themeId, px) { mutableStateOf<ImageBitmap?>(null) }
+
+    // Якщо іконка вже в кеші — беремо одразу, без кадру з порожнім місцем
+    var image by remember(packageName, activityName, themeId, px) {
+        mutableStateOf(loader.peek(packageName, activityName, px))
+    }
 
     LaunchedEffect(packageName, activityName, themeId, px) {
-        image = loader.load(packageName, activityName, px)
+        if (image == null) {
+            image = loader.load(packageName, activityName, px)
+        }
     }
 
     val bitmap = image

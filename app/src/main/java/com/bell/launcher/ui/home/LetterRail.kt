@@ -24,6 +24,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -36,19 +38,18 @@ import kotlin.math.roundToInt
 
 private val ITEM_HEIGHT = 21.dp
 
-/** Ширина зони дотику — під великий палець, а не під олівець. */
-val RAIL_WIDTH = 68.dp
+/** Ширина зони дотику — під великий палець. */
+val RAIL_WIDTH = 76.dp
 
 private val BUBBLE_SIZE = 46.dp
 
 /**
  * Алфавітний покажчик уздовж правого краю.
  *
- * Під час протягування літери вигинаються дугою ліворуч — амплітуда згасає
- * за гаусом від пальця, тому дуга плавна, без сходинок. Ліворуч від дуги
- * висить бульбашка з поточною літерою, щоб її не закривав палець.
- *
- * Літера змінюється **безперервно** під час руху пальця, а не лише на тап.
+ * Продуктивність: деформація літер рахується в [graphicsLayer], а не в тілі
+ * composable. Читання позиції пальця всередині graphicsLayer відкладає
+ * інвалідацію до фази малювання — Compose не перескладає 26 Text на кожен
+ * рух пальця, тому дуга йде рівно, без ривків.
  */
 @Composable
 fun LetterRail(
@@ -66,18 +67,16 @@ fun LetterRail(
     val density = LocalDensity.current
     val itemPx = with(density) { ITEM_HEIGHT.toPx() }
     val bubbleHalfPx = with(density) { (BUBBLE_SIZE / 2).toPx() }
-    val bubbleShiftPx = with(density) { 74.dp.toPx() }
-
-    // Наскільки далеко вигинається дуга і як швидко згасає
+    val bubbleShiftPx = with(density) { 86.dp.toPx() }
     val amplitudePx = with(density) { 78.dp.toPx() }
     val spreadPx = with(density) { 96.dp.toPx() }
 
-    var pointerY by remember { mutableFloatStateOf(0f) }
+    val pointerY = remember { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
 
-    val bend by animateFloatAsState(
+    val bendState = animateFloatAsState(
         targetValue = if (dragging) 1f else 0f,
-        animationSpec = tween(160),
+        animationSpec = tween(140),
         label = "bend",
     )
 
@@ -93,8 +92,8 @@ fun LetterRail(
                         dragging = true
 
                         fun pick(y: Float) {
-                            pointerY = y.coerceIn(0f, itemPx * letters.size)
-                            val index = (pointerY / itemPx).toInt()
+                            pointerY.floatValue = y.coerceIn(0f, itemPx * letters.size)
+                            val index = (pointerY.floatValue / itemPx).toInt()
                                 .coerceIn(0, letters.size - 1)
                             val letter = letters[index]
                             if (letter != active) onActiveChange(letter)
@@ -106,7 +105,6 @@ fun LetterRail(
                             val event = awaitPointerEvent()
                             val change = event.changes.firstOrNull { it.id == down.id } ?: break
                             if (!change.pressed) break
-                            // Споживаємо, щоб список під пальцем не скролився
                             change.consume()
                             pick(change.position.y)
                         }
@@ -118,33 +116,34 @@ fun LetterRail(
         ) {
             letters.forEachIndexed { index, letter ->
                 val center = (index + 0.5f) * itemPx
-                val distance = abs(center - pointerY)
-                val falloff = exp(-(distance / spreadPx) * (distance / spreadPx))
-                val shift = -amplitudePx * falloff * bend
-                val grow = 1f + 0.55f * falloff * bend
-                val isActive = letter == active && dragging
+                val isActive = letter == active
 
                 Box(
                     Modifier
                         .height(ITEM_HEIGHT)
                         .fillMaxWidth()
                         .padding(end = 12.dp),
-                    // Літери притиснуті до правого краю, а зона дотику широка
                     contentAlignment = Alignment.CenterEnd,
                 ) {
-                    // До дотику алфавіт майже прозорий, під час протягування — проявляється
-                    val alpha = if (isActive) {
-                        1f
-                    } else {
-                        (0.26f + 0.48f * bend + 0.26f * falloff * bend).coerceAtMost(0.95f)
-                    }
-
                     Text(
                         text = letter,
-                        color = color.copy(alpha = alpha),
-                        fontSize = (11f * grow).sp,
+                        color = color,
+                        fontSize = 12.sp,
                         fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
-                        modifier = Modifier.offset { IntOffset(shift.roundToInt(), 0) },
+                        modifier = Modifier.graphicsLayer {
+                            val bend = bendState.value
+                            val distance = abs(center - pointerY.floatValue)
+                            val ratio = distance / spreadPx
+                            val falloff = exp(-ratio * ratio)
+
+                            translationX = -amplitudePx * falloff * bend
+                            val grow = 1f + 0.55f * falloff * bend
+                            scaleX = grow
+                            scaleY = grow
+                            transformOrigin = TransformOrigin(1f, 0.5f)
+                            alpha = (0.26f + 0.48f * bend + 0.26f * falloff * bend)
+                                .coerceAtMost(1f)
+                        },
                     )
                 }
             }
@@ -157,7 +156,7 @@ fun LetterRail(
                     .offset {
                         IntOffset(
                             x = -bubbleShiftPx.roundToInt(),
-                            y = (pointerY - bubbleHalfPx).roundToInt(),
+                            y = (pointerY.floatValue - bubbleHalfPx).roundToInt(),
                         )
                     }
                     .size(BUBBLE_SIZE)

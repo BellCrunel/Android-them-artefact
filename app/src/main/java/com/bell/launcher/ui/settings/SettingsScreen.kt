@@ -20,7 +20,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -33,38 +32,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.bell.launcher.data.BackgroundMode
-import com.bell.launcher.data.FontChoice
 import com.bell.launcher.data.GestureAction
 import com.bell.launcher.data.GestureSlot
-import com.bell.launcher.data.IconStyle
 import com.bell.launcher.data.LauncherSettings
 
 @Composable
 fun SettingsScreen(
     settings: LauncherSettings,
     themeName: String,
+    appearanceSummary: String,
     hiddenCount: Int,
     favoritesCount: Int,
     weatherText: String,
-    iconPacks: List<Pair<String, String>>,
     notificationsEnabled: Boolean,
     onNotificationAccess: () -> Unit,
-    onOpenThemes: () -> Unit,
+    onOpenAppearance: () -> Unit,
     onOpenHidden: () -> Unit,
     onOpenFavorites: () -> Unit,
-    onOpenWallpapers: () -> Unit,
-    wallpaperName: String,
     onAddWidget: () -> Unit,
-    onChangeWallpaper: () -> Unit,
     onGesture: (GestureSlot, GestureAction) -> Unit,
-    onIconScale: (Float) -> Unit,
-    onIcons: (Boolean?) -> Unit,
-    onIconStyle: (IconStyle) -> Unit,
-    onIconPack: (String?) -> Unit,
-    onBackground: (BackgroundMode) -> Unit,
-    onFont: (FontChoice) -> Unit,
-    onClockSeparator: (String) -> Unit,
     onWeatherEnabled: (Boolean) -> Unit,
     onUseLocation: (Boolean) -> Unit,
     onEditCity: () -> Unit,
@@ -96,6 +82,16 @@ fun SettingsScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp),
             ) {
+                SectionTitle("Вигляд")
+                // Один вхід замість п'яти окремих пунктів: тема, фон, шпалери,
+                // іконки й шрифт тепер живуть на спільному екрані з передпереглядом.
+                RowItem(
+                    title = "Вигляд лаунчера",
+                    subtitle = "$themeName · $appearanceSummary",
+                    onClick = onOpenAppearance,
+                )
+
+                HorizontalDivider(Modifier.padding(vertical = 8.dp))
                 SectionTitle("Головний екран")
                 RowItem(
                     title = "Обрані додатки",
@@ -104,88 +100,8 @@ fun SettingsScreen(
                 )
                 RowItem(title = "Додати віджет", subtitle = "Обрати зі списку системи", onClick = onAddWidget)
 
-                ChoiceItem(
-                    title = "Формат часу",
-                    current = when (settings.clockSeparator) {
-                        ":" -> "14:33"
-                        " " -> "14 33"
-                        else -> "1433"
-                    },
-                    options = listOf("14:33" to ":", "1433" to "", "14 33" to " "),
-                    onSelect = { onClockSeparator(it) },
-                )
-
-                HorizontalDivider(Modifier.padding(vertical = 8.dp))
-                SectionTitle("Вигляд")
-
-                RowItem(title = "Тема", subtitle = themeName, onClick = onOpenThemes)
-
-                ChoiceItem(
-                    title = "Фон лаунчера",
-                    current = settings.backgroundMode.title,
-                    options = BackgroundMode.entries.map { it.title to it },
-                    onSelect = onBackground,
-                )
-                RowItem(
-                    title = "Шпалери лаунчера",
-                    subtitle = wallpaperName,
-                    onClick = onOpenWallpapers,
-                )
-                RowItem(
-                    title = "Змінити шпалери системи",
-                    subtitle = "Відкриє галерею Android",
-                    onClick = onChangeWallpaper,
-                )
-
-                ChoiceItem(
-                    title = "Шрифт",
-                    current = settings.fontChoice.title,
-                    options = FontChoice.entries.map { it.title to it },
-                    onSelect = onFont,
-                )
-
-                HorizontalDivider(Modifier.padding(vertical = 8.dp))
-                SectionTitle("Іконки")
-
-                ChoiceItem(
-                    title = "Стиль іконок",
-                    current = settings.iconStyle.title,
-                    options = IconStyle.entries.map { it.title to it },
-                    onSelect = onIconStyle,
-                )
-
-                ChoiceItem(
-                    title = "Пак іконок",
-                    current = iconPacks.firstOrNull { it.first == settings.iconPackPackage }?.second
-                        ?: if (settings.iconPackPackage == null) "Немає" else settings.iconPackPackage,
-                    subtitle = if (iconPacks.isEmpty()) {
-                        "Встановіть будь-який icon pack із Play Market — він з'явиться тут"
-                    } else {
-                        "Знайдено паків: ${iconPacks.size}"
-                    },
-                    options = buildList<Pair<String, String?>> {
-                        add("Немає" to null)
-                        iconPacks.forEach { (pkg, label) -> add(label to pkg) }
-                    },
-                    onSelect = onIconPack,
-                )
-
-                SliderItem(
-                    title = "Розмір іконок",
-                    value = settings.iconScale,
-                    range = 0.7f..1.5f,
-                    onChange = onIconScale,
-                )
-
-                SwitchItem(
-                    title = "Показувати іконки",
-                    checked = settings.showIconsOverride ?: true,
-                    onChange = { onIcons(it) },
-                )
-
                 HorizontalDivider(Modifier.padding(vertical = 8.dp))
                 SectionTitle("Сповіщення")
-
                 RowItem(
                     title = "Доступ до сповіщень",
                     subtitle = if (notificationsEnabled) {
@@ -198,19 +114,19 @@ fun SettingsScreen(
 
                 HorizontalDivider(Modifier.padding(vertical = 8.dp))
                 SectionTitle("Погода")
-
                 SwitchItem("Показувати погоду", settings.weatherEnabled, onWeatherEnabled)
                 SwitchItem("Брати з геолокації", settings.useLocation, onUseLocation)
                 RowItem(
                     title = "Місто вручну",
-                    subtitle = settings.manualCity.ifBlank { "Не задано" },
+                    subtitle = settings.manualCity.ifBlank {
+                        "Не задано — беремо з геолокації або з часового поясу"
+                    },
                     onClick = onEditCity,
                 )
                 RowItem(title = "Оновити зараз", subtitle = weatherText, onClick = onRefreshWeather)
 
                 HorizontalDivider(Modifier.padding(vertical = 8.dp))
                 SectionTitle("Жести")
-
                 GestureItem(GestureSlot.SWIPE_UP, settings.swipeUp, onGesture)
                 GestureItem(GestureSlot.SWIPE_DOWN, settings.swipeDown, onGesture)
                 GestureItem(GestureSlot.TWO_FINGER_SWIPE_DOWN, settings.twoFingerSwipeDown, onGesture)
@@ -225,7 +141,7 @@ fun SettingsScreen(
 
                 Spacer(Modifier.height(28.dp))
                 Text(
-                    "Bell Launcher · формат тем v2",
+                    "Artefact Launcher · формат тем v2",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                 )
@@ -317,22 +233,6 @@ private fun SwitchItem(title: String, checked: Boolean, onChange: (Boolean) -> U
     ) {
         Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
         Switch(checked = checked, onCheckedChange = onChange)
-    }
-}
-
-@Composable
-private fun SliderItem(
-    title: String,
-    value: Float,
-    range: ClosedFloatingPointRange<Float>,
-    onChange: (Float) -> Unit,
-) {
-    Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-        Row {
-            Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-            Text("${Math.round(value * 100)} %", style = MaterialTheme.typography.bodyMedium)
-        }
-        Slider(value = value, onValueChange = onChange, valueRange = range)
     }
 }
 

@@ -1,5 +1,7 @@
 package com.bell.launcher.ui
 
+import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -14,6 +16,7 @@ import com.bell.launcher.data.LauncherSettings
 import com.bell.launcher.data.NotificationStore
 import com.bell.launcher.data.WallpaperItem
 import com.bell.launcher.data.Weather
+import com.bell.launcher.data.WeatherStatus
 import com.bell.launcher.service.LauncherNotificationService
 import com.bell.launcher.data.model.AppEntry
 import com.bell.launcher.data.model.AppInfo
@@ -29,9 +32,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-enum class Overlay { NONE, DRAWER, SETTINGS, THEMES, HIDDEN_APPS, FAVORITES, WALLPAPERS }
+enum class Overlay { NONE, DRAWER, SETTINGS, APPEARANCE, HIDDEN_APPS, FAVORITES }
 
 data class LauncherUiState(
     val apps: List<AppInfo> = emptyList(),
@@ -54,6 +58,10 @@ class LauncherViewModel(private val container: AppContainer) : ViewModel() {
     val openFolderId: StateFlow<String?> = _openFolderId
 
     val weather: StateFlow<Weather?> = container.weatherRepository.weather
+    val weatherStatus: StateFlow<WeatherStatus> = container.weatherRepository.status
+
+    /** Опис стану погоди для рядка в налаштуваннях. */
+    fun weatherText(): String = container.weatherRepository.statusText()
 
     /** Активні сповіщення, згруповані за пакетом додатка. */
     val notifications: StateFlow<Map<String, AppNotification>> = NotificationStore.items
@@ -91,7 +99,34 @@ class LauncherViewModel(private val container: AppContainer) : ViewModel() {
                 }
             }
         }
-        refreshWeather()
+        // Погода: повторюємо спроби, поки не вийде. Раніше був один-єдиний
+        // запит при старті — якщо він не знаходив координат, погода не
+        // з'являлася вже ніколи й без жодного повідомлення.
+        viewModelScope.launch {
+            while (true) {
+                container.weatherRepository.refresh(container.settingsRepository.settings.value)
+                val ok = container.weatherRepository.weather.value != null
+                delay(if (ok) 15 * 60_000L else 60_000L)
+            }
+        }
+    }
+
+    /** Пошук паків іконок у Play Market — своїх ми не постачаємо. */
+    fun openIconPackSearch() {
+        val context = container.context
+        val intents = listOf(
+            Intent(Intent.ACTION_VIEW, Uri.parse("market://search?q=icon%20pack&c=apps")),
+            Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://play.google.com/store/search?q=icon%20pack&c=apps"),
+            ),
+        )
+        for (intent in intents) {
+            val ok = runCatching {
+                context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }.isSuccess
+            if (ok) return
+        }
     }
 
     override fun onCleared() {

@@ -128,7 +128,23 @@ class MainActivity : ComponentActivity() {
 
             LaunchedEffect(Unit) {
                 CrashLog.markReady(this@MainActivity)
+                askLocationOnce()
             }
+        }
+    }
+
+    /**
+     * Один раз за встановлення просимо дозвіл на геолокацію — з ним погода
+     * точна до району. Без дозволу лаунчер усе одно покаже погоду за містом
+     * із часового поясу, тож повторно не набридаємо.
+     */
+    private fun askLocationOnce() {
+        val prefs = getSharedPreferences("launcher_flags", Context.MODE_PRIVATE)
+        if (prefs.getBoolean(KEY_LOCATION_ASKED, false)) return
+        prefs.edit().putBoolean(KEY_LOCATION_ASKED, true).apply()
+        if (viewModel.hasLocationPermission()) return
+        runCatching {
+            locationPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
         }
     }
 
@@ -140,7 +156,7 @@ class MainActivity : ComponentActivity() {
                     externalPath = CrashLog.externalPath(this),
                     onCopy = {
                         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        clipboard.setPrimaryClip(ClipData.newPlainText("Bell Launcher", text))
+                        clipboard.setPrimaryClip(ClipData.newPlainText("Artefact Launcher", text))
                         toast("Скопійовано")
                     },
                     onContinue = {
@@ -183,5 +199,9 @@ class MainActivity : ComponentActivity() {
 
     private fun toast(text: String) {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+    }
+
+    private companion object {
+        const val KEY_LOCATION_ASKED = "location_asked"
     }
 }

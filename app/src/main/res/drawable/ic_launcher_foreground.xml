@@ -1,19 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Іконка Artefact Launcher — гранований кристал-артефакт.
+
+    Малюється гранями: кожна грань окремий path, тому іконка лишається
+    чіткою на будь-якій щільності екрана. Уся фігура вміщується в безпечну
+    зону адаптивної іконки (центральні 66 зі 108 dp), тож кругла маска
+    на Pixel/Samsung нічого не зрізає.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+    <!-- м'яка тінь під кристалом -->
+    <path
+        android:fillAlpha="0.22"
+        android:fillColor="#000000"
+        android:pathData="M54,86 L70,54 L38,54 Z" />
+
+    <!-- ліва грань -->
+    <path
+        android:fillColor="#5B32D6"
+        android:pathData="M54,26 L36,50 L54,84 Z" />
+
+    <!-- права грань -->
     <path
         android:fillColor="#7C4DFF"
-        android:pathData="M34,30h16a4,4 0,0 1,4 4v16a4,4 0,0 1,-4 4h-16a4,4 0,0 1,-4 -4v-16a4,4 0,0 1,4 -4z" />
+        android:pathData="M54,26 L72,50 L54,84 Z" />
+
+    <!-- верхній зріз, лівий -->
     <path
+        android:fillColor="#B79BFF"
+        android:pathData="M54,26 L36,50 L54,57 Z" />
+
+    <!-- верхній зріз, правий -->
+    <path
+        android:fillColor="#9B7BFF"
+        android:pathData="M54,26 L72,50 L54,57 Z" />
+
+    <!-- бірюзовий відблиск на правій грані -->
+    <path
+        android:fillAlpha="0.7"
         android:fillColor="#00E5FF"
-        android:pathData="M58,30h16a4,4 0,0 1,4 4v16a4,4 0,0 1,-4 4h-16a4,4 0,0 1,-4 -4v-16a4,4 0,0 1,4 -4z" />
+        android:pathData="M54,57 L72,50 L54,84 Z" />
+
+    <!-- іскра по осі -->
     <path
-        android:fillColor="#00E5FF"
-        android:pathData="M34,54h16a4,4 0,0 1,4 4v16a4,4 0,0 1,-4 4h-16a4,4 0,0 1,-4 -4v-16a4,4 0,0 1,4 -4z" />
-    <path
+        android:fillAlpha="0.9"
         android:fillColor="#FFFFFF"
-        android:pathData="M66,58m-12,0a12,12 0,1 1,24 0a12,12 0,1 1,-24 0" />
+        android:pathData="M54,26 L56.5,47 L54,57 L51.5,47 Z" />
 </vector>

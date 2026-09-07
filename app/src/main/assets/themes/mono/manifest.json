@@ -2,16 +2,17 @@
   "formatVersion": 2,
   "id": "builtin.mono",
   "name": "Mono Paper",
-  "author": "Bell Launcher",
+  "author": "Artefact Launcher",
   "version": "2.0.0",
   "description": "Світла мінімалістична тема: тонкі контурні іконки, компактний заголовок.",
-
   "wallpaper": {
-    "gradient": ["#FCFCFA", "#F2F0EB"],
+    "gradient": [
+      "#FCFCFA",
+      "#F2F0EB"
+    ],
     "dim": 0.0,
     "parallaxOnScroll": false
   },
-
   "colors": {
     "dark": false,
     "primary": "#1B1B1B",
@@ -27,12 +28,10 @@
     "labelShadow": "#00000000",
     "scrubber": "#1B1B1B"
   },
-
   "typography": {
     "scale": 1.0,
     "allCaps": false
   },
-
   "header": {
     "style": "bigDigits",
     "clockSizeSp": 62,
@@ -46,17 +45,17 @@
     "subSeparator": " · ",
     "subSizeSp": 13,
     "align": "start",
-    "paddingTopDp": 60,
+    "paddingTopDp": 170,
     "paddingBottomDp": 34
   },
-
   "icons": {
     "shape": "original",
-    "scale": 0.9,
-    "tint": "#1B1B1B",
-    "normalizeLegacyIcons": true
+    "scale": 1.0,
+    "background": null,
+    "normalizeLegacyIcons": true,
+    "folder": "icons",
+    "tint": "#1B1B1B"
   },
-
   "layout": {
     "iconSizeDp": 30,
     "rowSpacingDp": 16,
@@ -70,7 +69,6 @@
     "drawerShowIcons": true,
     "statusBarDark": true
   },
-
   "effects": {
     "drawerScrim": 0.96,
     "animationSpeed": 1.0,

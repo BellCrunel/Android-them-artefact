@@ -2,16 +2,19 @@
   "formatVersion": 2,
   "id": "builtin.aurora",
   "name": "Aurora",
-  "author": "Bell Launcher",
+  "author": "Artefact Launcher",
   "version": "2.0.0",
   "description": "Темна нічна тема: великі цифри, м'які квадратні підкладки під іконками.",
-
   "wallpaper": {
-    "gradient": ["#0A0A0F", "#141420", "#0D1520", "#07070C"],
+    "gradient": [
+      "#0A0A0F",
+      "#141420",
+      "#0D1520",
+      "#07070C"
+    ],
     "dim": 0.0,
     "parallaxOnScroll": true
   },
-
   "colors": {
     "dark": true,
     "primary": "#B9B9C7",
@@ -27,18 +30,16 @@
     "labelShadow": "#99000000",
     "scrubber": "#FFFFFF"
   },
-
   "typography": {
     "scale": 1.0,
     "allCaps": false
   },
-
   "header": {
     "style": "bigDigits",
     "clockSizeSp": 82,
     "clockWeight": 700,
     "clockLetterSpacingEm": -0.06,
-    "clockSeparator": "",
+    "clockSeparator": ":",
     "hour24": true,
     "dateFormat": "EEE, d MMM",
     "showDate": true,
@@ -46,18 +47,16 @@
     "subSeparator": "  ",
     "subSizeSp": 15,
     "align": "start",
-    "paddingTopDp": 104,
+    "paddingTopDp": 170,
     "paddingBottomDp": 30
   },
-
   "icons": {
-    "shape": "rounded",
-    "cornerRadiusPercent": 30,
-    "scale": 0.62,
-    "background": "#1E1E28",
-    "normalizeLegacyIcons": true
+    "shape": "original",
+    "scale": 1.0,
+    "background": null,
+    "normalizeLegacyIcons": true,
+    "folder": "icons"
   },
-
   "layout": {
     "iconSizeDp": 44,
     "rowSpacingDp": 12,
@@ -70,7 +69,6 @@
     "drawerScrubber": true,
     "drawerShowIcons": true
   },
-
   "effects": {
     "drawerScrim": 0.9,
     "animationSpeed": 1.0,

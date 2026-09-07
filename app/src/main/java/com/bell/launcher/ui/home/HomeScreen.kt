@@ -26,6 +26,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -94,13 +95,18 @@ fun HomeScreen(
 
     Box(modifier.fillMaxSize()) {
 
+        // Crossfade перемикається лише між «обрані» і «режим літери».
+        // Раніше targetState був самою літерою — тому кожна нова літера
+        // під пальцем запускала повну анімацію переходу, і саме це лагало.
+        val letterMode = activeLetter != null && activeLetter != IndexLetters.FAVORITES
+
         Crossfade(
-            targetState = activeLetter,
-            animationSpec = tween(180),
+            targetState = letterMode,
+            animationSpec = tween(140),
             label = "homeMode",
             modifier = Modifier.fillMaxSize(),
-        ) { letter ->
-            if (letter == null || letter == IndexLetters.FAVORITES) {
+        ) { inLetterMode ->
+            if (!inLetterMode) {
                 FavoritesList(
                     state = state,
                     weather = weather,
@@ -115,6 +121,7 @@ fun HomeScreen(
                     onDismissNotification = onDismissNotification,
                 )
             } else {
+                val letter = activeLetter ?: IndexLetters.OTHER
                 LetterList(
                     letter = letter,
                     apps = grouped[letter].orEmpty(),
@@ -174,7 +181,7 @@ private fun FavoritesList(
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize().systemBarsPadding(),
-        contentPadding = PaddingValues(end = 62.dp),
+        contentPadding = PaddingValues(end = 72.dp),
         // Головний екран не скролиться: інакше свайп угору (перед відкриттям пошуку)
         // піднімав би годинник у самий верх. Довгі списки — це вже алфавіт.
         userScrollEnabled = false,
@@ -254,6 +261,9 @@ private fun LetterList(
     val shadow = parseColor(theme.manifest.colors.labelShadow, Color.Transparent)
     val listState = rememberLazyListState()
 
+    // Нова літера — список починається згори, без анімації прокрутки
+    LaunchedEffect(letter) { listState.scrollToItem(0) }
+
     Box(
         Modifier
             .fillMaxSize()
@@ -262,7 +272,7 @@ private fun LetterList(
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize().systemBarsPadding(),
-            contentPadding = PaddingValues(top = 96.dp, bottom = 80.dp, end = 62.dp),
+            contentPadding = PaddingValues(top = 150.dp, bottom = 80.dp, end = 72.dp),
         ) {
             item(key = "__letter__") {
                 Text(

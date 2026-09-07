@@ -72,7 +72,7 @@ object CrashLog {
     }
 
     private fun header(context: Context) = buildString {
-        appendLine("Bell Launcher — звіт про запуск")
+        appendLine("Artefact Launcher — звіт про запуск")
         appendLine("Час: ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())}")
         appendLine("Android: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
         appendLine("Пристрій: ${Build.MANUFACTURER} ${Build.MODEL}")

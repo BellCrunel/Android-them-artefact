@@ -30,7 +30,7 @@ class IconLoader(private val context: Context) {
     private var spec: IconSpec = IconSpec()
     private var iconPack: IconPackLoader? = null
     private var configKey: String = ""
-    private val cache = LruCache<String, ImageBitmap>(400)
+    private val cache = LruCache<String, ImageBitmap>(700)
 
     /** Тема + фактичні параметри іконок (тема, перекрита налаштуваннями). */
     @Synchronized
@@ -44,6 +44,14 @@ class IconLoader(private val context: Context) {
         val packName = newSpec.iconPackPackage?.takeIf { it.isNotBlank() }
         iconPack = packName?.let { IconPackLoader(context, it) }
     }
+
+    /**
+     * Синхронно віддає іконку, якщо вона вже в кеші.
+     * Потрібно, щоб при швидкому гортанні алфавіту рядки не блимали
+     * порожнім місцем у кадрі перед тим, як завантаження з IO повернеться.
+     */
+    fun peek(packageName: String, activityName: String, sizePx: Int): ImageBitmap? =
+        cache.get("$configKey|$packageName/$activityName|$sizePx")
 
     suspend fun load(packageName: String, activityName: String, sizePx: Int): ImageBitmap? =
         withContext(Dispatchers.IO) {

@@ -2,7 +2,7 @@
 cd /d "%~dp0"
 echo.
 echo ================================================
-echo   Bell Launcher - upload changes and build
+echo   Artefact Launcher - upload changes and build
 echo ================================================
 echo.
 
@@ -18,6 +18,18 @@ if not exist ".github\workflows" mkdir ".github\workflows"
 if exist "ci-smoke-workflow.yml" (
     move /y "ci-smoke-workflow.yml" ".github\workflows\smoke.yml" >nul
     echo [OK] emulator smoke-test workflow installed
+)
+
+rem --- screens merged into AppearanceScreen.kt, old files must go ---
+set "OLD1=app\src\main\java\com\bell\launcher\ui\settings\ThemeGallery.kt"
+set "OLD2=app\src\main\java\com\bell\launcher\ui\settings\WallpaperScreen.kt"
+if exist "%OLD1%" (
+    del /q "%OLD1%"
+    echo [OK] removed ThemeGallery.kt
+)
+if exist "%OLD2%" (
+    del /q "%OLD2%"
+    echo [OK] removed WallpaperScreen.kt
 )
 
 echo Adding files...

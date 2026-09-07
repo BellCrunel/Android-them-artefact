@@ -2,16 +2,19 @@
   "formatVersion": 2,
   "id": "builtin.neon",
   "name": "Violet Dusk",
-  "author": "Bell Launcher",
+  "author": "Artefact Launcher",
   "version": "2.0.0",
   "description": "Фіолетові сутінки: контурні іконки, білі підписи, алфавітний скрол.",
-
   "wallpaper": {
-    "gradient": ["#3B2A6B", "#553C86", "#6B4A93", "#2A1F4D"],
+    "gradient": [
+      "#3B2A6B",
+      "#553C86",
+      "#6B4A93",
+      "#2A1F4D"
+    ],
     "dim": 0.08,
     "parallaxOnScroll": true
   },
-
   "colors": {
     "dark": true,
     "primary": "#C08BEB",
@@ -27,12 +30,10 @@
     "labelShadow": "#80000000",
     "scrubber": "#FFFFFF"
   },
-
   "typography": {
     "scale": 1.0,
     "allCaps": false
   },
-
   "header": {
     "style": "bigDigits",
     "clockSizeSp": 74,
@@ -46,16 +47,16 @@
     "subSeparator": " · ",
     "subSizeSp": 14,
     "align": "start",
-    "paddingTopDp": 54,
+    "paddingTopDp": 170,
     "paddingBottomDp": 28
   },
-
   "icons": {
     "shape": "original",
-    "scale": 0.92,
-    "normalizeLegacyIcons": true
+    "scale": 1.0,
+    "background": null,
+    "normalizeLegacyIcons": true,
+    "folder": "icons"
   },
-
   "layout": {
     "iconSizeDp": 40,
     "rowSpacingDp": 14,
@@ -68,7 +69,6 @@
     "drawerScrubber": true,
     "drawerShowIcons": true
   },
-
   "effects": {
     "drawerScrim": 0.82,
     "animationSpeed": 1.0,

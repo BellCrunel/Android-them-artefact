@@ -51,6 +51,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.bell.launcher.data.BackgroundMode
 import com.bell.launcher.data.GestureAction
+import com.bell.launcher.data.LauncherSettings
 import com.bell.launcher.data.model.AppEntry
 import com.bell.launcher.data.model.AppRef
 import com.bell.launcher.data.model.FolderEntry
@@ -68,12 +69,13 @@ import com.bell.launcher.ui.gestures.launcherGestures
 import com.bell.launcher.ui.home.HomeRowAction
 import com.bell.launcher.ui.home.HomeScreen
 import com.bell.launcher.ui.home.RAIL_WIDTH
+import com.bell.launcher.ui.settings.AppearanceScreen
 import com.bell.launcher.ui.settings.FavoritesScreen
 import com.bell.launcher.ui.settings.HiddenAppsScreen
 import com.bell.launcher.ui.settings.SettingsScreen
-import com.bell.launcher.ui.settings.ThemeGallery
-import com.bell.launcher.ui.settings.WallpaperScreen
 import com.bell.launcher.ui.widget.LocalWidgetController
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun LauncherRoot(
@@ -84,7 +86,10 @@ fun LauncherRoot(
     val state by viewModel.state.collectAsState()
     val overlay by viewModel.overlay.collectAsState()
     val weather by viewModel.weather.collectAsState()
+    val weatherStatus by viewModel.weatherStatus.collectAsState()
     val notifications by viewModel.notifications.collectAsState()
+    // Перечитуємо текст щоразу, коли змінюється стан або самі дані погоди.
+    val weatherStatusText = remember(weatherStatus, weather) { viewModel.weatherText() }
 
     val context = LocalContext.current
     val theme = LocalLauncherTheme.current
@@ -125,7 +130,7 @@ fun LauncherRoot(
             GestureAction.OPEN_DRAWER -> viewModel.openOverlay(Overlay.DRAWER)
             GestureAction.EXPAND_NOTIFICATIONS -> expandNotifications(context)
             GestureAction.OPEN_SETTINGS -> viewModel.openOverlay(Overlay.SETTINGS)
-            GestureAction.OPEN_THEMES -> viewModel.openOverlay(Overlay.THEMES)
+            GestureAction.OPEN_THEMES -> viewModel.openOverlay(Overlay.APPEARANCE)
             GestureAction.OPEN_FAVORITES -> viewModel.openOverlay(Overlay.FAVORITES)
             GestureAction.OPEN_WIDGETS -> addWidget()
         }
@@ -162,8 +167,12 @@ fun LauncherRoot(
                 BackgroundMode.THEME -> ThemeWallpaper(theme = theme, scrollFraction = scrollFraction)
                 BackgroundMode.IMAGE -> {
                     val file = state.settings.wallpaperFile
+                    // Декодуємо у фоні: на головному потоці велике фото
+                    // з'їдає кілька кадрів під час першої появи екрана.
                     val bitmap by produceState<ImageBitmap?>(null, file) {
-                        value = file?.let { viewModel.loadWallpaper(it, 2160) }
+                        value = file?.let { name ->
+                            withContext(Dispatchers.IO) { viewModel.loadWallpaper(name, 2160) }
+                        }
                     }
                     AssetWallpaper(bitmap = bitmap, dim = state.settings.wallpaperDim)
                 }
@@ -196,7 +205,7 @@ fun LauncherRoot(
                 HomeMenu(
                     onWidgets = { homeMenu = false; addWidget() },
                     onWallpaper = { homeMenu = false; pickWallpaper(context) },
-                    onThemes = { homeMenu = false; viewModel.openOverlay(Overlay.THEMES) },
+                    onThemes = { homeMenu = false; viewModel.openOverlay(Overlay.APPEARANCE) },
                     onSettings = { homeMenu = false; viewModel.openOverlay(Overlay.SETTINGS) },
                     onDismiss = { homeMenu = false },
                 )
@@ -231,27 +240,17 @@ fun LauncherRoot(
                 SettingsScreen(
                     settings = state.settings,
                     themeName = theme.name,
+                    appearanceSummary = appearanceSummary(state.settings),
                     hiddenCount = state.settings.hiddenApps.size,
                     favoritesCount = state.favoriteKeys.size,
-                    weatherText = weather?.let { "${it.shortText}  ${it.place}".trim() } ?: "Немає даних",
-                    iconPacks = iconPacks,
+                    weatherText = weatherStatusText,
                     notificationsEnabled = viewModel.notificationsEnabled(),
                     onNotificationAccess = { openNotificationAccess(context) },
-                    onOpenThemes = { viewModel.openOverlay(Overlay.THEMES) },
+                    onOpenAppearance = { viewModel.openOverlay(Overlay.APPEARANCE) },
                     onOpenHidden = { viewModel.openOverlay(Overlay.HIDDEN_APPS) },
                     onOpenFavorites = { viewModel.openOverlay(Overlay.FAVORITES) },
-                    onOpenWallpapers = { viewModel.openOverlay(Overlay.WALLPAPERS) },
-                    wallpaperName = state.settings.wallpaperFile ?: "Не обрано",
                     onAddWidget = { viewModel.closeOverlay(); addWidget() },
-                    onChangeWallpaper = { pickWallpaper(context) },
                     onGesture = { slot, action -> viewModel.setGesture(slot, action) },
-                    onIconScale = { viewModel.setIconScale(it) },
-                    onIcons = { viewModel.setIconsOverride(it) },
-                    onIconStyle = { viewModel.setIconStyle(it) },
-                    onIconPack = { viewModel.setIconPack(it) },
-                    onBackground = { viewModel.setBackgroundMode(it) },
-                    onFont = { viewModel.setFont(it) },
-                    onClockSeparator = { viewModel.setClockSeparator(it) },
                     onWeatherEnabled = { viewModel.setWeatherEnabled(it) },
                     onUseLocation = { enabled ->
                         if (enabled && !viewModel.hasLocationPermission()) onRequestLocationPermission()
@@ -263,26 +262,30 @@ fun LauncherRoot(
                 )
             }
 
-            AnimatedVisibility(visible = overlay == Overlay.THEMES, enter = fadeIn(), exit = fadeOut()) {
-                ThemeGallery(
-                    themes = state.themes,
-                    currentId = theme.id,
-                    onApply = { viewModel.setTheme(it) },
-                    onDelete = { viewModel.deleteTheme(it) },
-                    onImport = onImportTheme,
-                    onBack = { viewModel.openOverlay(Overlay.SETTINGS) },
-                )
-            }
-
-            AnimatedVisibility(visible = overlay == Overlay.WALLPAPERS, enter = fadeIn(), exit = fadeOut()) {
+            AnimatedVisibility(visible = overlay == Overlay.APPEARANCE, enter = fadeIn(), exit = fadeOut()) {
                 val wallpapers = remember { viewModel.wallpapers() }
-                WallpaperScreen(
-                    items = wallpapers,
-                    selected = state.settings.wallpaperFile,
-                    dim = state.settings.wallpaperDim,
-                    loadThumbnail = { viewModel.loadWallpaper(it, 480) },
-                    onSelect = { viewModel.setWallpaper(it) },
-                    onDim = { viewModel.setWallpaperDim(it) },
+                AppearanceScreen(
+                    settings = state.settings,
+                    themes = state.themes,
+                    sampleApps = state.apps,
+                    weather = weather,
+                    wallpapers = wallpapers,
+                    installedPacks = iconPacks,
+                    loadWallpaper = { file, width -> viewModel.loadWallpaper(file, width) },
+                    onTheme = { viewModel.setTheme(it) },
+                    onImportTheme = onImportTheme,
+                    onDeleteTheme = { viewModel.deleteTheme(it) },
+                    onBackground = { viewModel.setBackgroundMode(it) },
+                    onWallpaper = { viewModel.setWallpaper(it) },
+                    onWallpaperDim = { viewModel.setWallpaperDim(it) },
+                    onSystemWallpaper = { pickWallpaper(context) },
+                    onIconStyle = { viewModel.setIconStyle(it) },
+                    onIconPack = { viewModel.setIconPack(it) },
+                    onIconScale = { viewModel.setIconScale(it) },
+                    onIcons = { viewModel.setIconsOverride(it) },
+                    onFindIconPacks = { viewModel.openIconPackSearch() },
+                    onFont = { viewModel.setFont(it) },
+                    onClockSeparator = { viewModel.setClockSeparator(it) },
                     onBack = { viewModel.openOverlay(Overlay.SETTINGS) },
                 )
             }
@@ -343,8 +346,7 @@ fun LauncherRoot(
             renameTarget != null -> renameTarget = null
             homeMenu -> homeMenu = false
             overlay == Overlay.HIDDEN_APPS ||
-                overlay == Overlay.THEMES ||
-                overlay == Overlay.WALLPAPERS ||
+                overlay == Overlay.APPEARANCE ||
                 overlay == Overlay.FAVORITES -> viewModel.openOverlay(Overlay.SETTINGS)
             else -> viewModel.closeOverlay()
         }
@@ -398,6 +400,13 @@ private fun MenuButton(icon: ImageVector, label: String, onClick: () -> Unit) {
         Text(label, style = MaterialTheme.typography.labelSmall, maxLines = 1)
     }
 }
+
+/** Короткий підпис під пунктом «Вигляд лаунчера» в налаштуваннях. */
+private fun appearanceSummary(settings: LauncherSettings): String = listOf(
+    settings.backgroundMode.title,
+    settings.iconStyle.title,
+    settings.fontChoice.title,
+).joinToString(" · ")
 
 /** Системний екран «Доступ до сповіщень» — без нього крапки й свайпи не працюють. */
 private fun openNotificationAccess(context: Context) {
