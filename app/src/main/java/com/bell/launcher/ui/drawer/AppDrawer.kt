@@ -38,8 +38,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.bell.launcher.data.model.AppInfo
@@ -51,6 +53,7 @@ import com.bell.launcher.ui.components.AppIconImage
 import com.bell.launcher.ui.components.AppRow
 import com.bell.launcher.ui.components.LocalIconScale
 import com.bell.launcher.ui.components.LocalIconsOverride
+import com.bell.launcher.ui.gestures.launcherGestures
 import com.bell.launcher.util.IndexLetters
 import kotlinx.coroutines.launch
 
@@ -79,11 +82,25 @@ fun AppDrawer(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+    var searchFocused by remember { mutableStateOf(false) }
 
     // Свайп угору відкриває шухляду вже з активним пошуком — можна одразу друкувати.
     LaunchedEffect(Unit) {
         if (focusSearch) {
             runCatching { focusRequester.requestFocus() }
+        }
+    }
+
+    // Свайп вниз: перший прибирає клавіатуру, другий закриває шухляду.
+    // Разом це і є «подвійний свайп вниз повертає на головний екран».
+    val swipeDownToClose: () -> Unit = {
+        val atTop = listState.firstVisibleItemIndex == 0 &&
+            listState.firstVisibleItemScrollOffset == 0
+        when {
+            searchFocused -> focusManager.clearFocus()
+            atTop -> onClose()
+            else -> Unit
         }
     }
 
@@ -105,7 +122,12 @@ fun AppDrawer(
                 parseColor(theme.manifest.colors.background, Color.Black)
                     .copy(alpha = effects.drawerScrim.coerceIn(0.2f, 1f))
             )
-            .pointerInput(Unit) { detectTapGestures { } },
+            .pointerInput(Unit) { detectTapGestures { } }
+            .launcherGestures(
+                onSwipeUp = {},
+                onSwipeDown = swipeDownToClose,
+                onTwoFingerSwipeDown = { onClose() },
+            ),
     ) {
         Column(Modifier.fillMaxSize().systemBarsPadding()) {
 
@@ -127,7 +149,8 @@ fun AppDrawer(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 10.dp)
-                    .focusRequester(focusRequester),
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { searchFocused = it.isFocused },
             )
 
             Box(Modifier.fillMaxSize()) {

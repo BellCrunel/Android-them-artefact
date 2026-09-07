@@ -29,6 +29,7 @@ enum class IconStyle(val title: String) {
 enum class BackgroundMode(val title: String) {
     SYSTEM("Системні шпалери"),
     THEME("Фон із теми"),
+    IMAGE("Зображення з папки wallpapers"),
 }
 
 /** Шрифти, доступні на будь-якому Android без завантаження. */
@@ -56,6 +57,10 @@ data class LauncherSettings(
     val iconStyle: IconStyle = IconStyle.THEME,
     val iconPackPackage: String? = null,
     val backgroundMode: BackgroundMode = BackgroundMode.SYSTEM,
+    /** Ім'я файлу з assets/wallpapers, коли backgroundMode == IMAGE. */
+    val wallpaperFile: String? = null,
+    /** Затемнення власних шпалер, 0..1 — щоб текст читався. */
+    val wallpaperDim: Float = 0.25f,
     val fontChoice: FontChoice = FontChoice.THEME,
     /** null = як у темі; інакше "" (1433), ":" (14:33) або " " (14 33). */
     val clockSeparator: String? = ":",
@@ -85,6 +90,8 @@ class SettingsRepository(context: Context) {
         iconStyle = enumOr(KEY_ICON_STYLE, IconStyle.THEME),
         iconPackPackage = prefs.getString(KEY_ICON_PACK, null)?.ifBlank { null },
         backgroundMode = enumOr(KEY_BACKGROUND, BackgroundMode.SYSTEM),
+        wallpaperFile = prefs.getString(KEY_WALLPAPER, null)?.ifBlank { null },
+        wallpaperDim = prefs.getFloat(KEY_WALLPAPER_DIM, 0.25f),
         fontChoice = enumOr(KEY_FONT, FontChoice.THEME),
         clockSeparator = if (prefs.contains(KEY_CLOCK_SEP)) prefs.getString(KEY_CLOCK_SEP, ":") else ":",
         weatherEnabled = prefs.getBoolean(KEY_WEATHER, true),
@@ -110,6 +117,8 @@ class SettingsRepository(context: Context) {
             putString(KEY_ICON_STYLE, next.iconStyle.name)
             putString(KEY_ICON_PACK, next.iconPackPackage.orEmpty())
             putString(KEY_BACKGROUND, next.backgroundMode.name)
+            putString(KEY_WALLPAPER, next.wallpaperFile.orEmpty())
+            putFloat(KEY_WALLPAPER_DIM, next.wallpaperDim)
             putString(KEY_FONT, next.fontChoice.name)
             if (next.clockSeparator == null) remove(KEY_CLOCK_SEP) else putString(KEY_CLOCK_SEP, next.clockSeparator)
             putBoolean(KEY_WEATHER, next.weatherEnabled)
@@ -140,6 +149,13 @@ class SettingsRepository(context: Context) {
     fun setIconStyle(style: IconStyle) = mutate { it.copy(iconStyle = style) }
     fun setIconPack(pkg: String?) = mutate { it.copy(iconPackPackage = pkg?.ifBlank { null }) }
     fun setBackgroundMode(mode: BackgroundMode) = mutate { it.copy(backgroundMode = mode) }
+    fun setWallpaper(file: String?) = mutate {
+        it.copy(
+            wallpaperFile = file,
+            backgroundMode = if (file != null) BackgroundMode.IMAGE else it.backgroundMode,
+        )
+    }
+    fun setWallpaperDim(value: Float) = mutate { it.copy(wallpaperDim = value.coerceIn(0f, 0.85f)) }
     fun setFont(font: FontChoice) = mutate { it.copy(fontChoice = font) }
     fun setClockSeparator(value: String?) = mutate { it.copy(clockSeparator = value) }
 
@@ -160,6 +176,8 @@ class SettingsRepository(context: Context) {
         private const val KEY_ICON_STYLE = "icon_style"
         private const val KEY_ICON_PACK = "icon_pack"
         private const val KEY_BACKGROUND = "background_mode"
+        private const val KEY_WALLPAPER = "wallpaper_file"
+        private const val KEY_WALLPAPER_DIM = "wallpaper_dim"
         private const val KEY_FONT = "font_choice"
         private const val KEY_CLOCK_SEP = "clock_separator"
         private const val KEY_WEATHER = "weather_enabled"

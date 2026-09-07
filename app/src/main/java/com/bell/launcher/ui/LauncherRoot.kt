@@ -37,12 +37,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -56,6 +58,7 @@ import com.bell.launcher.data.model.WidgetEntry
 import com.bell.launcher.theme.LocalLauncherTheme
 import com.bell.launcher.ui.components.LocalIconLoader
 import com.bell.launcher.ui.components.LocalIconScale
+import com.bell.launcher.ui.components.AssetWallpaper
 import com.bell.launcher.ui.components.LocalIconsOverride
 import com.bell.launcher.ui.components.ThemeWallpaper
 import com.bell.launcher.ui.drawer.AppDrawer
@@ -67,6 +70,7 @@ import com.bell.launcher.ui.settings.FavoritesScreen
 import com.bell.launcher.ui.settings.HiddenAppsScreen
 import com.bell.launcher.ui.settings.SettingsScreen
 import com.bell.launcher.ui.settings.ThemeGallery
+import com.bell.launcher.ui.settings.WallpaperScreen
 import com.bell.launcher.ui.widget.LocalWidgetController
 
 @Composable
@@ -151,8 +155,16 @@ fun LauncherRoot(
 
             // У режимі «Системні шпалери» нічого не малюємо — вікно прозоре
             // (windowShowWallpaper=true), тож видно шпалери телефона.
-            if (state.settings.backgroundMode == BackgroundMode.THEME) {
-                ThemeWallpaper(theme = theme, scrollFraction = scrollFraction)
+            when (state.settings.backgroundMode) {
+                BackgroundMode.THEME -> ThemeWallpaper(theme = theme, scrollFraction = scrollFraction)
+                BackgroundMode.IMAGE -> {
+                    val file = state.settings.wallpaperFile
+                    val bitmap by produceState<ImageBitmap?>(null, file) {
+                        value = file?.let { viewModel.loadWallpaper(it, 2160) }
+                    }
+                    AssetWallpaper(bitmap = bitmap, dim = state.settings.wallpaperDim)
+                }
+                BackgroundMode.SYSTEM -> Unit
             }
 
             HomeScreen(
@@ -223,6 +235,8 @@ fun LauncherRoot(
                     onOpenThemes = { viewModel.openOverlay(Overlay.THEMES) },
                     onOpenHidden = { viewModel.openOverlay(Overlay.HIDDEN_APPS) },
                     onOpenFavorites = { viewModel.openOverlay(Overlay.FAVORITES) },
+                    onOpenWallpapers = { viewModel.openOverlay(Overlay.WALLPAPERS) },
+                    wallpaperName = state.settings.wallpaperFile ?: "Не обрано",
                     onAddWidget = { viewModel.closeOverlay(); addWidget() },
                     onChangeWallpaper = { pickWallpaper(context) },
                     onGesture = { slot, action -> viewModel.setGesture(slot, action) },
@@ -251,6 +265,19 @@ fun LauncherRoot(
                     onApply = { viewModel.setTheme(it) },
                     onDelete = { viewModel.deleteTheme(it) },
                     onImport = onImportTheme,
+                    onBack = { viewModel.openOverlay(Overlay.SETTINGS) },
+                )
+            }
+
+            AnimatedVisibility(visible = overlay == Overlay.WALLPAPERS, enter = fadeIn(), exit = fadeOut()) {
+                val wallpapers = remember { viewModel.wallpapers() }
+                WallpaperScreen(
+                    items = wallpapers,
+                    selected = state.settings.wallpaperFile,
+                    dim = state.settings.wallpaperDim,
+                    loadThumbnail = { viewModel.loadWallpaper(it, 480) },
+                    onSelect = { viewModel.setWallpaper(it) },
+                    onDim = { viewModel.setWallpaperDim(it) },
                     onBack = { viewModel.openOverlay(Overlay.SETTINGS) },
                 )
             }
@@ -312,6 +339,7 @@ fun LauncherRoot(
             homeMenu -> homeMenu = false
             overlay == Overlay.HIDDEN_APPS ||
                 overlay == Overlay.THEMES ||
+                overlay == Overlay.WALLPAPERS ||
                 overlay == Overlay.FAVORITES -> viewModel.openOverlay(Overlay.SETTINGS)
             else -> viewModel.closeOverlay()
         }

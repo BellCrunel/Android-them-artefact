@@ -12,6 +12,7 @@ import com.bell.launcher.data.IconStyle
 import com.bell.launcher.data.AppNotification
 import com.bell.launcher.data.LauncherSettings
 import com.bell.launcher.data.NotificationStore
+import com.bell.launcher.data.WallpaperItem
 import com.bell.launcher.data.Weather
 import com.bell.launcher.service.LauncherNotificationService
 import com.bell.launcher.data.model.AppEntry
@@ -30,7 +31,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-enum class Overlay { NONE, DRAWER, SETTINGS, THEMES, HIDDEN_APPS, FAVORITES }
+enum class Overlay { NONE, DRAWER, SETTINGS, THEMES, HIDDEN_APPS, FAVORITES, WALLPAPERS }
 
 data class LauncherUiState(
     val apps: List<AppInfo> = emptyList(),
@@ -140,6 +141,13 @@ class LauncherViewModel(private val container: AppContainer) : ViewModel() {
     fun setIconStyle(style: IconStyle) = container.settingsRepository.setIconStyle(style)
     fun setIconPack(pkg: String?) = container.settingsRepository.setIconPack(pkg)
     fun setBackgroundMode(mode: BackgroundMode) = container.settingsRepository.setBackgroundMode(mode)
+    fun setWallpaper(file: String?) = container.settingsRepository.setWallpaper(file)
+    fun setWallpaperDim(value: Float) = container.settingsRepository.setWallpaperDim(value)
+
+    /** Зображення з assets/wallpapers. */
+    fun wallpapers(): List<WallpaperItem> = container.wallpaperRepository.list()
+    fun loadWallpaper(fileName: String, maxWidth: Int = 1440) =
+        container.wallpaperRepository.load(fileName, maxWidth)
     fun setFont(font: FontChoice) = container.settingsRepository.setFont(font)
     fun setClockSeparator(value: String?) = container.settingsRepository.setClockSeparator(value)
 

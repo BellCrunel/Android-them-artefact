@@ -5,6 +5,7 @@ import android.content.Context
 import com.bell.launcher.data.AppRepository
 import com.bell.launcher.data.LayoutRepository
 import com.bell.launcher.data.SettingsRepository
+import com.bell.launcher.data.WallpaperRepository
 import com.bell.launcher.data.WeatherRepository
 import com.bell.launcher.theme.IconLoader
 import com.bell.launcher.theme.ThemeRepository
@@ -15,6 +16,7 @@ class AppContainer(val context: Context) {
     val settingsRepository = SettingsRepository(context).also { CrashLog.step(context, "SettingsRepository ok") }
     val themeRepository = ThemeRepository(context).also { CrashLog.step(context, "ThemeRepository ok") }
     val weatherRepository = WeatherRepository(context).also { CrashLog.step(context, "WeatherRepository ok") }
+    val wallpaperRepository = WallpaperRepository(context).also { CrashLog.step(context, "WallpaperRepository ok") }
     val iconLoader = IconLoader(context).also { CrashLog.step(context, "IconLoader ok") }
 }
 

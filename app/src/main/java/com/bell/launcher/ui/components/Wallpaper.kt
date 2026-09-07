@@ -18,6 +18,34 @@ import com.bell.launcher.theme.LauncherThemeData
 import com.bell.launcher.theme.parseColor
 
 /**
+ * Фон із файлу, який користувач поклав у assets/wallpapers.
+ */
+@Composable
+fun AssetWallpaper(
+    bitmap: ImageBitmap?,
+    dim: Float,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier.fillMaxSize()) {
+        if (bitmap != null) {
+            Image(
+                bitmap = bitmap,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+        if (dim > 0f) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = dim.coerceIn(0f, 1f)))
+            )
+        }
+    }
+}
+
+/**
  * Фон лаунчера: зображення з теми або градієнт, з легким паралаксом при скролі списку.
  */
 @Composable

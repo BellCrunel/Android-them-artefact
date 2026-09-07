@@ -133,12 +133,15 @@ fun HomeScreen(
             letters = letters,
             active = activeLetter,
             color = parseColor(theme.manifest.colors.scrubber, Color.White),
+            bubbleColor = parseColor(theme.manifest.colors.surface, Color.DarkGray)
+                .copy(alpha = 0.92f),
+            bubbleTextColor = parseColor(theme.manifest.colors.onSurface, Color.White),
             onActiveChange = { activeLetter = it },
             onRelease = { /* лишаємо літеру, щоб можна було натиснути додаток */ },
             modifier = Modifier
-                .align(Alignment.CenterEnd)
+                .align(Alignment.BottomEnd)
                 .systemBarsPadding()
-                .padding(end = 2.dp),
+                .padding(end = 2.dp, bottom = 64.dp),
         )
     }
 }
@@ -171,7 +174,10 @@ private fun FavoritesList(
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize().systemBarsPadding(),
-        contentPadding = PaddingValues(end = 34.dp),
+        contentPadding = PaddingValues(end = 44.dp),
+        // Головний екран не скролиться: інакше свайп угору (перед відкриттям пошуку)
+        // піднімав би годинник у самий верх. Довгі списки — це вже алфавіт.
+        userScrollEnabled = false,
     ) {
         item(key = "__header__") {
             Box(emptyAreaModifier.fillMaxWidth().padding(horizontal = padH)) {
@@ -256,7 +262,7 @@ private fun LetterList(
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize().systemBarsPadding(),
-            contentPadding = PaddingValues(top = 96.dp, bottom = 80.dp, end = 34.dp),
+            contentPadding = PaddingValues(top = 96.dp, bottom = 80.dp, end = 44.dp),
         ) {
             item(key = "__letter__") {
                 Text(

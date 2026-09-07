@@ -53,6 +53,8 @@ fun SettingsScreen(
     onOpenThemes: () -> Unit,
     onOpenHidden: () -> Unit,
     onOpenFavorites: () -> Unit,
+    onOpenWallpapers: () -> Unit,
+    wallpaperName: String,
     onAddWidget: () -> Unit,
     onChangeWallpaper: () -> Unit,
     onGesture: (GestureSlot, GestureAction) -> Unit,
@@ -123,6 +125,11 @@ fun SettingsScreen(
                     current = settings.backgroundMode.title,
                     options = BackgroundMode.entries.map { it.title to it },
                     onSelect = onBackground,
+                )
+                RowItem(
+                    title = "Шпалери лаунчера",
+                    subtitle = wallpaperName,
+                    onClick = onOpenWallpapers,
                 )
                 RowItem(
                     title = "Змінити шпалери системи",
