@@ -1,0 +1,85 @@
+{
+  "formatVersion": 2,
+  "id": "com.bell.theme.sunset",
+  "name": "Sunset",
+  "author": "Bell",
+  "version": "1.0.0",
+  "description": "Приклад теми: теплий градієнт, великі цифри, круглі іконки.",
+
+  "wallpaper": {
+    "gradient": ["#2B1055", "#5A2A72", "#C9556B", "#FF9A5A"],
+    "dim": 0.08,
+    "parallaxOnScroll": true
+  },
+
+  "colors": {
+    "dark": true,
+    "primary": "#FF7043",
+    "onPrimary": "#1A0B05",
+    "secondary": "#FFD180",
+    "background": "#160D1F",
+    "onBackground": "#F5ECFF",
+    "surface": "#241634",
+    "onSurface": "#F5ECFF",
+    "outline": "#33FFFFFF",
+    "homeLabel": "#FFFFFF",
+    "drawerLabel": "#F5ECFF",
+    "labelShadow": "#B3000000",
+    "scrubber": "#FFFFFF"
+  },
+
+  "typography": {
+    "fontFamily": null,
+    "scale": 1.0,
+    "allCaps": false
+  },
+
+  "header": {
+    "style": "bigDigits",
+    "clockFont": null,
+    "clockSizeSp": 78,
+    "clockWeight": 700,
+    "clockLetterSpacingEm": -0.05,
+    "clockSeparator": "",
+    "hour24": true,
+    "dateFormat": "EEE, d MMM",
+    "showDate": true,
+    "showWeather": true,
+    "subSeparator": " · ",
+    "subSizeSp": 14,
+    "align": "start",
+    "paddingTopDp": 54,
+    "paddingBottomDp": 28
+  },
+
+  "icons": {
+    "shape": "circle",
+    "scale": 0.86,
+    "background": "#FFF3E0",
+    "normalizeLegacyIcons": true,
+    "iconPackPackage": null,
+    "folder": "icons",
+    "map": {},
+    "tint": null
+  },
+
+  "layout": {
+    "iconSizeDp": 44,
+    "rowSpacingDp": 12,
+    "iconGapDp": 20,
+    "horizontalPaddingDp": 26,
+    "align": "start",
+    "showIcons": true,
+    "labelSizeSp": 17,
+    "labelWeight": 500,
+    "drawerScrubber": true,
+    "drawerShowIcons": true,
+    "statusBarDark": false
+  },
+
+  "effects": {
+    "drawerScrim": 0.88,
+    "animationSpeed": 1.0,
+    "parallax": 0.4
+  }
+}

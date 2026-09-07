@@ -1,0 +1,77 @@
+{
+  "formatVersion": 2,
+  "id": "builtin.neon",
+  "name": "Violet Dusk",
+  "author": "Bell Launcher",
+  "version": "2.0.0",
+  "description": "Фіолетові сутінки: контурні іконки, білі підписи, алфавітний скрол.",
+
+  "wallpaper": {
+    "gradient": ["#3B2A6B", "#553C86", "#6B4A93", "#2A1F4D"],
+    "dim": 0.08,
+    "parallaxOnScroll": true
+  },
+
+  "colors": {
+    "dark": true,
+    "primary": "#C08BEB",
+    "onPrimary": "#241238",
+    "secondary": "#F2C6A0",
+    "background": "#241A3D",
+    "onBackground": "#F4EEFF",
+    "surface": "#312450",
+    "onSurface": "#F4EEFF",
+    "outline": "#33FFFFFF",
+    "homeLabel": "#F6F1FF",
+    "drawerLabel": "#F6F1FF",
+    "labelShadow": "#80000000",
+    "scrubber": "#FFFFFF"
+  },
+
+  "typography": {
+    "scale": 1.0,
+    "allCaps": false
+  },
+
+  "header": {
+    "style": "bigDigits",
+    "clockSizeSp": 74,
+    "clockWeight": 600,
+    "clockLetterSpacingEm": -0.03,
+    "clockSeparator": ":",
+    "hour24": true,
+    "dateFormat": "EEE, d MMM",
+    "showDate": true,
+    "showWeather": true,
+    "subSeparator": " · ",
+    "subSizeSp": 14,
+    "align": "start",
+    "paddingTopDp": 54,
+    "paddingBottomDp": 28
+  },
+
+  "icons": {
+    "shape": "original",
+    "scale": 0.92,
+    "normalizeLegacyIcons": true
+  },
+
+  "layout": {
+    "iconSizeDp": 40,
+    "rowSpacingDp": 14,
+    "iconGapDp": 20,
+    "horizontalPaddingDp": 26,
+    "align": "start",
+    "showIcons": true,
+    "labelSizeSp": 18,
+    "labelWeight": 500,
+    "drawerScrubber": true,
+    "drawerShowIcons": true
+  },
+
+  "effects": {
+    "drawerScrim": 0.82,
+    "animationSpeed": 1.0,
+    "parallax": 0.45
+  }
+}

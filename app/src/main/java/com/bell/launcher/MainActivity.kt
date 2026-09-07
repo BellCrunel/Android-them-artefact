@@ -1,0 +1,111 @@
+package com.bell.launcher
+
+import android.Manifest
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.core.view.WindowCompat
+import com.bell.launcher.theme.LauncherTheme
+import com.bell.launcher.theme.LauncherThemeData
+import com.bell.launcher.theme.ThemeSource
+import com.bell.launcher.theme.model.ThemeManifest
+import com.bell.launcher.ui.LauncherRoot
+import com.bell.launcher.ui.LauncherViewModel
+import com.bell.launcher.ui.Overlay
+import com.bell.launcher.ui.widget.LocalWidgetController
+import com.bell.launcher.ui.widget.WidgetController
+import java.io.File
+
+class MainActivity : ComponentActivity() {
+
+    private val viewModel: LauncherViewModel by viewModels {
+        LauncherViewModel.Factory((application as LauncherApp).container)
+    }
+
+    private val widgetController = WidgetController(this)
+
+    private val importThemeLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri == null) return@registerForActivityResult
+            runCatching {
+                contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            viewModel.installTheme(uri) { result ->
+                result.fold(
+                    onSuccess = { toast("Тему «${it.name}» встановлено") },
+                    onFailure = { toast("Помилка: ${it.message}") },
+                )
+            }
+        }
+
+    private val locationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                viewModel.refreshWeather(force = true)
+            } else {
+                toast("Без дозволу на геолокацію вкажіть місто вручну")
+            }
+        }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        setContent {
+            val state by viewModel.state.collectAsState()
+            val theme = state.theme ?: emptyTheme()
+
+            LauncherTheme(themeData = theme) {
+                CompositionLocalProvider(LocalWidgetController provides widgetController) {
+                    LauncherRoot(
+                        viewModel = viewModel,
+                        onImportTheme = { importThemeLauncher.launch(arrayOf("*/*")) },
+                        onRequestLocationPermission = {
+                            locationPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+                        },
+                    )
+                }
+            }
+        }
+    }
+
+    private fun emptyTheme() = LauncherThemeData(
+        manifest = ThemeManifest(id = "fallback", name = "Default"),
+        source = ThemeSource.Folder(File(filesDir, "__none__")),
+    )
+
+    override fun onStart() {
+        super.onStart()
+        widgetController.startListening()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshWeather()
+    }
+
+    override fun onStop() {
+        widgetController.stopListening()
+        super.onStop()
+    }
+
+    /** Натискання кнопки «Home», коли лаунчер уже активний. */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (viewModel.overlay.value != Overlay.NONE) viewModel.closeOverlay()
+    }
+
+    private fun toast(text: String) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+    }
+}

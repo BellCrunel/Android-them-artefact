@@ -1,0 +1,79 @@
+{
+  "formatVersion": 2,
+  "id": "builtin.mono",
+  "name": "Mono Paper",
+  "author": "Bell Launcher",
+  "version": "2.0.0",
+  "description": "Світла мінімалістична тема: тонкі контурні іконки, компактний заголовок.",
+
+  "wallpaper": {
+    "gradient": ["#FCFCFA", "#F2F0EB"],
+    "dim": 0.0,
+    "parallaxOnScroll": false
+  },
+
+  "colors": {
+    "dark": false,
+    "primary": "#1B1B1B",
+    "onPrimary": "#FFFFFF",
+    "secondary": "#7A6F5D",
+    "background": "#FCFCFA",
+    "onBackground": "#1B1B1B",
+    "surface": "#FFFFFF",
+    "onSurface": "#1B1B1B",
+    "outline": "#22000000",
+    "homeLabel": "#1B1B1B",
+    "drawerLabel": "#1B1B1B",
+    "labelShadow": "#00000000",
+    "scrubber": "#1B1B1B"
+  },
+
+  "typography": {
+    "scale": 1.0,
+    "allCaps": false
+  },
+
+  "header": {
+    "style": "bigDigits",
+    "clockSizeSp": 62,
+    "clockWeight": 300,
+    "clockLetterSpacingEm": 0.02,
+    "clockSeparator": ":",
+    "hour24": true,
+    "dateFormat": "EEE, d MMM",
+    "showDate": true,
+    "showWeather": true,
+    "subSeparator": " · ",
+    "subSizeSp": 13,
+    "align": "start",
+    "paddingTopDp": 60,
+    "paddingBottomDp": 34
+  },
+
+  "icons": {
+    "shape": "original",
+    "scale": 0.9,
+    "tint": "#1B1B1B",
+    "normalizeLegacyIcons": true
+  },
+
+  "layout": {
+    "iconSizeDp": 30,
+    "rowSpacingDp": 16,
+    "iconGapDp": 22,
+    "horizontalPaddingDp": 30,
+    "align": "start",
+    "showIcons": true,
+    "labelSizeSp": 16,
+    "labelWeight": 400,
+    "drawerScrubber": true,
+    "drawerShowIcons": true,
+    "statusBarDark": true
+  },
+
+  "effects": {
+    "drawerScrim": 0.96,
+    "animationSpeed": 1.0,
+    "parallax": 0.0
+  }
+}

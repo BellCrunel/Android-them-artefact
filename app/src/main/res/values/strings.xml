@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Bell Launcher</string>
+    <string name="drawer_search_hint">Пошук додатків…</string>
+    <string name="settings">Налаштування</string>
+    <string name="themes">Теми</string>
+    <string name="widgets">Віджети</string>
+    <string name="wallpaper">Шпалери</string>
+    <string name="app_info">Про додаток</string>
+    <string name="uninstall">Видалити</string>
+    <string name="remove">Прибрати</string>
+    <string name="rename">Перейменувати</string>
+    <string name="import_theme">Імпортувати тему (.ltheme / .zip)</string>
+    <string name="apply">Застосувати</string>
+    <string name="cancel">Скасувати</string>
+    <string name="ok">Готово</string>
+    <string name="new_folder">Нова папка</string>
+</resources>
