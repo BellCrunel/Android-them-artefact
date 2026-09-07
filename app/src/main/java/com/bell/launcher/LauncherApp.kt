@@ -9,7 +9,7 @@ import com.bell.launcher.data.WeatherRepository
 import com.bell.launcher.theme.IconLoader
 import com.bell.launcher.theme.ThemeRepository
 
-class AppContainer(context: Context) {
+class AppContainer(val context: Context) {
     val appRepository = AppRepository(context).also { CrashLog.step(context, "AppRepository ok") }
     val layoutRepository = LayoutRepository(context).also { CrashLog.step(context, "LayoutRepository ok") }
     val settingsRepository = SettingsRepository(context).also { CrashLog.step(context, "SettingsRepository ok") }

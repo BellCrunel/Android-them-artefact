@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.bell.launcher.data.Weather
 import com.bell.launcher.theme.LocalClockFont
+import com.bell.launcher.theme.LocalClockSeparator
 import com.bell.launcher.theme.LocalLauncherTheme
 import com.bell.launcher.theme.model.AlignMode
 import com.bell.launcher.theme.model.HeaderStyle
@@ -60,11 +61,12 @@ fun ClockHeader(
     val subColor = parseColor(spec.subColor, clockColor.copy(alpha = 0.85f))
     val shadow = parseColor(theme.manifest.colors.labelShadow, Color.Transparent)
 
-    val timeText = remember(now.hour, now.minute, spec.hour24, spec.clockSeparator) {
+    val separator = LocalClockSeparator.current
+    val timeText = remember(now.hour, now.minute, spec.hour24, separator) {
         val pattern = if (spec.hour24) "HH" else "hh"
         val hours = now.format(DateTimeFormatter.ofPattern(pattern, Locale.getDefault()))
         val minutes = now.format(DateTimeFormatter.ofPattern("mm", Locale.getDefault()))
-        "$hours${spec.clockSeparator}$minutes"
+        "$hours$separator$minutes"
     }
 
     val dateText = remember(now.dayOfYear, spec.dateFormat) {

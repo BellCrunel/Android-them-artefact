@@ -1,5 +1,6 @@
 package com.bell.launcher.theme
 
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
@@ -19,9 +20,14 @@ val LocalLauncherTheme = staticCompositionLocalOf<LauncherThemeData> {
 /** Шрифт для великих цифр годинника (може відрізнятися від основного шрифта теми). */
 val LocalClockFont = staticCompositionLocalOf<FontFamily?> { null }
 
+/** Роздільник годин і хвилин з урахуванням налаштувань користувача. */
+val LocalClockSeparator = staticCompositionLocalOf { ":" }
+
 @Composable
 fun LauncherTheme(
     themeData: LauncherThemeData,
+    fontOverride: FontFamily? = null,
+    clockSeparator: String = ":",
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -68,12 +74,15 @@ fun LauncherTheme(
         }
     }
 
-    val bodyFont = remember(themeData.id) {
+    val themeFont = remember(themeData.id) {
         FontResolver.family(context, themeData, themeData.manifest.typography.fontFamily)
     }
+    val bodyFont = fontOverride ?: themeFont
 
-    val clockFont = remember(themeData.id) {
-        FontResolver.family(context, themeData, themeData.manifest.header.clockFont) ?: bodyFont
+    val clockFont = remember(themeData.id, fontOverride) {
+        fontOverride
+            ?: FontResolver.family(context, themeData, themeData.manifest.header.clockFont)
+            ?: themeFont
     }
 
     val typography = remember(bodyFont, themeData.id) {
@@ -97,10 +106,15 @@ fun LauncherTheme(
         )
     }
 
-    CompositionLocalProvider(
-        LocalLauncherTheme provides themeData,
-        LocalClockFont provides clockFont,
-    ) {
-        MaterialTheme(colorScheme = scheme, typography = typography, content = content)
+    MaterialTheme(colorScheme = scheme, typography = typography) {
+        // Без цього Text без явного кольору бере LocalContentColor, який за
+        // замовчуванням ЧОРНИЙ — на темній темі текст просто зникає.
+        CompositionLocalProvider(
+            LocalLauncherTheme provides themeData,
+            LocalClockFont provides clockFont,
+            LocalClockSeparator provides clockSeparator,
+            LocalContentColor provides scheme.onBackground,
+            content = content,
+        )
     }
 }

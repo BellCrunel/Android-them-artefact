@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.bell.launcher.data.BackgroundMode
 import com.bell.launcher.data.GestureAction
 import com.bell.launcher.data.model.AppEntry
 import com.bell.launcher.data.model.AppRef
@@ -62,6 +63,7 @@ import com.bell.launcher.ui.folder.RenameDialog
 import com.bell.launcher.ui.gestures.launcherGestures
 import com.bell.launcher.ui.home.HomeRowAction
 import com.bell.launcher.ui.home.HomeScreen
+import com.bell.launcher.ui.settings.FavoritesScreen
 import com.bell.launcher.ui.settings.HiddenAppsScreen
 import com.bell.launcher.ui.settings.SettingsScreen
 import com.bell.launcher.ui.settings.ThemeGallery
@@ -76,6 +78,7 @@ fun LauncherRoot(
     val state by viewModel.state.collectAsState()
     val overlay by viewModel.overlay.collectAsState()
     val weather by viewModel.weather.collectAsState()
+    val notifications by viewModel.notifications.collectAsState()
 
     val context = LocalContext.current
     val theme = LocalLauncherTheme.current
@@ -95,6 +98,7 @@ fun LauncherRoot(
     var cityDialog by remember { mutableStateOf(false) }
 
     val folders = state.layout.sorted.filterIsInstance<FolderEntry>()
+    val iconPacks = remember { viewModel.installedIconPacks() }
 
     fun launch(ref: AppRef) {
         viewModel.appRepository.launch(ref.packageName, ref.activityName)
@@ -115,6 +119,7 @@ fun LauncherRoot(
             GestureAction.EXPAND_NOTIFICATIONS -> expandNotifications(context)
             GestureAction.OPEN_SETTINGS -> viewModel.openOverlay(Overlay.SETTINGS)
             GestureAction.OPEN_THEMES -> viewModel.openOverlay(Overlay.THEMES)
+            GestureAction.OPEN_FAVORITES -> viewModel.openOverlay(Overlay.FAVORITES)
             GestureAction.OPEN_WIDGETS -> addWidget()
         }
     }
@@ -144,16 +149,23 @@ fun LauncherRoot(
     ) {
         Box(Modifier.fillMaxSize()) {
 
-            ThemeWallpaper(theme = theme, scrollFraction = scrollFraction)
+            // У режимі «Системні шпалери» нічого не малюємо — вікно прозоре
+            // (windowShowWallpaper=true), тож видно шпалери телефона.
+            if (state.settings.backgroundMode == BackgroundMode.THEME) {
+                ThemeWallpaper(theme = theme, scrollFraction = scrollFraction)
+            }
 
             HomeScreen(
                 state = state,
                 weather = weather,
                 listState = listState,
+                notifications = notifications,
                 onLaunch = ::launch,
                 onAction = ::handleRowAction,
                 onFolderAppRemove = { folderId, ref -> viewModel.removeFromFolder(folderId, ref) },
                 onLongPressEmpty = { homeMenu = true },
+                onOpenNotification = { viewModel.openNotification(it) },
+                onDismissNotification = { viewModel.dismissNotification(it) },
                 modifier = Modifier.launcherGestures(
                     onSwipeUp = { if (overlay == Overlay.NONE) runAction(state.settings.swipeUp) },
                     onSwipeDown = { if (overlay == Overlay.NONE) runAction(state.settings.swipeDown) },
@@ -203,14 +215,24 @@ fun LauncherRoot(
                     settings = state.settings,
                     themeName = theme.name,
                     hiddenCount = state.settings.hiddenApps.size,
+                    favoritesCount = state.favoriteKeys.size,
                     weatherText = weather?.let { "${it.shortText}  ${it.place}".trim() } ?: "Немає даних",
+                    iconPacks = iconPacks,
+                    notificationsEnabled = viewModel.notificationsEnabled(),
+                    onNotificationAccess = { openNotificationAccess(context) },
                     onOpenThemes = { viewModel.openOverlay(Overlay.THEMES) },
                     onOpenHidden = { viewModel.openOverlay(Overlay.HIDDEN_APPS) },
+                    onOpenFavorites = { viewModel.openOverlay(Overlay.FAVORITES) },
                     onAddWidget = { viewModel.closeOverlay(); addWidget() },
                     onChangeWallpaper = { pickWallpaper(context) },
                     onGesture = { slot, action -> viewModel.setGesture(slot, action) },
                     onIconScale = { viewModel.setIconScale(it) },
                     onIcons = { viewModel.setIconsOverride(it) },
+                    onIconStyle = { viewModel.setIconStyle(it) },
+                    onIconPack = { viewModel.setIconPack(it) },
+                    onBackground = { viewModel.setBackgroundMode(it) },
+                    onFont = { viewModel.setFont(it) },
+                    onClockSeparator = { viewModel.setClockSeparator(it) },
                     onWeatherEnabled = { viewModel.setWeatherEnabled(it) },
                     onUseLocation = { enabled ->
                         if (enabled && !viewModel.hasLocationPermission()) onRequestLocationPermission()
@@ -230,6 +252,15 @@ fun LauncherRoot(
                     onDelete = { viewModel.deleteTheme(it) },
                     onImport = onImportTheme,
                     onBack = { viewModel.openOverlay(Overlay.SETTINGS) },
+                )
+            }
+
+            AnimatedVisibility(visible = overlay == Overlay.FAVORITES, enter = fadeIn(), exit = fadeOut()) {
+                FavoritesScreen(
+                    apps = state.apps,
+                    favorites = state.favoriteKeys,
+                    onToggle = { viewModel.toggleFavorite(it) },
+                    onDone = { viewModel.closeOverlay() },
                 )
             }
 
@@ -279,7 +310,9 @@ fun LauncherRoot(
             cityDialog -> cityDialog = false
             renameTarget != null -> renameTarget = null
             homeMenu -> homeMenu = false
-            overlay == Overlay.HIDDEN_APPS || overlay == Overlay.THEMES -> viewModel.openOverlay(Overlay.SETTINGS)
+            overlay == Overlay.HIDDEN_APPS ||
+                overlay == Overlay.THEMES ||
+                overlay == Overlay.FAVORITES -> viewModel.openOverlay(Overlay.SETTINGS)
             else -> viewModel.closeOverlay()
         }
     }
@@ -330,6 +363,21 @@ private fun MenuButton(icon: ImageVector, label: String, onClick: () -> Unit) {
         Icon(icon, contentDescription = label, tint = MaterialTheme.colorScheme.onSurface)
         Spacer(Modifier.height(6.dp))
         Text(label, style = MaterialTheme.typography.labelSmall, maxLines = 1)
+    }
+}
+
+/** Системний екран «Доступ до сповіщень» — без нього крапки й свайпи не працюють. */
+private fun openNotificationAccess(context: Context) {
+    val intent = Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    val ok = runCatching { context.startActivity(intent) }.isSuccess
+    if (!ok) {
+        runCatching {
+            context.startActivity(
+                Intent(android.provider.Settings.ACTION_SETTINGS)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        }
     }
 }
 

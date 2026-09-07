@@ -18,7 +18,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.core.view.WindowCompat
+import com.bell.launcher.theme.Appearance
 import com.bell.launcher.theme.LauncherTheme
 import com.bell.launcher.theme.LauncherThemeData
 import com.bell.launcher.theme.ThemeSource
@@ -103,8 +105,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             val state by viewModel.state.collectAsState()
             val theme = state.theme ?: emptyTheme()
+            val fontOverride = remember(state.settings.fontChoice) {
+                Appearance.fontFamily(state.settings.fontChoice)
+            }
+            val clockSeparator = Appearance.clockSeparator(state.theme, state.settings)
 
-            LauncherTheme(themeData = theme) {
+            LauncherTheme(
+                themeData = theme,
+                fontOverride = fontOverride,
+                clockSeparator = clockSeparator,
+            ) {
                 CompositionLocalProvider(LocalWidgetController provides widgetController) {
                     LauncherRoot(
                         viewModel = viewModel,

@@ -4,15 +4,24 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.bell.launcher.AppContainer
+import com.bell.launcher.data.BackgroundMode
+import com.bell.launcher.data.FontChoice
 import com.bell.launcher.data.GestureAction
 import com.bell.launcher.data.GestureSlot
+import com.bell.launcher.data.IconStyle
+import com.bell.launcher.data.AppNotification
 import com.bell.launcher.data.LauncherSettings
+import com.bell.launcher.data.NotificationStore
 import com.bell.launcher.data.Weather
+import com.bell.launcher.service.LauncherNotificationService
+import com.bell.launcher.data.model.AppEntry
 import com.bell.launcher.data.model.AppInfo
 import com.bell.launcher.data.model.AppRef
 import com.bell.launcher.data.model.HomeEntry
 import com.bell.launcher.data.model.HomeLayout
 import com.bell.launcher.data.model.WidgetEntry
+import com.bell.launcher.theme.Appearance
+import com.bell.launcher.theme.IconPackLoader
 import com.bell.launcher.theme.LauncherThemeData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,7 +30,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-enum class Overlay { NONE, DRAWER, SETTINGS, THEMES, HIDDEN_APPS }
+enum class Overlay { NONE, DRAWER, SETTINGS, THEMES, HIDDEN_APPS, FAVORITES }
 
 data class LauncherUiState(
     val apps: List<AppInfo> = emptyList(),
@@ -29,7 +38,11 @@ data class LauncherUiState(
     val settings: LauncherSettings = LauncherSettings(),
     val theme: LauncherThemeData? = null,
     val themes: List<LauncherThemeData> = emptyList(),
-)
+) {
+    /** Ключі додатків, що зараз є на головному екрані. */
+    val favoriteKeys: Set<String>
+        get() = layout.entries.filterIsInstance<AppEntry>().map { it.app.key }.toSet()
+}
 
 class LauncherViewModel(private val container: AppContainer) : ViewModel() {
 
@@ -41,6 +54,13 @@ class LauncherViewModel(private val container: AppContainer) : ViewModel() {
 
     val weather: StateFlow<Weather?> = container.weatherRepository.weather
 
+    /** Активні сповіщення, згруповані за пакетом додатка. */
+    val notifications: StateFlow<Map<String, AppNotification>> = NotificationStore.items
+
+    fun openNotification(packageName: String) = NotificationStore.open(packageName)
+    fun dismissNotification(packageName: String) = NotificationStore.dismiss(packageName)
+    fun notificationsEnabled(): Boolean = LauncherNotificationService.isEnabled(container.context)
+
     val state: StateFlow<LauncherUiState> = combine(
         container.appRepository.apps,
         container.layoutRepository.layout,
@@ -50,12 +70,16 @@ class LauncherViewModel(private val container: AppContainer) : ViewModel() {
         val theme = themes.firstOrNull { it.id == settings.themeId }
             ?: themes.firstOrNull { it.id == com.bell.launcher.theme.ThemeRepository.BUILTIN_DEFAULT }
             ?: themes.firstOrNull()
-        container.iconLoader.setTheme(theme)
+        container.iconLoader.configure(theme, Appearance.iconSpec(theme, settings))
         LauncherUiState(apps, layout, settings, theme, themes)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, LauncherUiState())
 
     val iconLoader get() = container.iconLoader
     val appRepository get() = container.appRepository
+
+    /** Встановлені на пристрої icon pack (ADW/Nova), для списку в налаштуваннях. */
+    fun installedIconPacks(): List<Pair<String, String>> =
+        runCatching { IconPackLoader.installedPacks(container.context) }.getOrDefault(emptyList())
 
     init {
         container.appRepository.start(viewModelScope)
@@ -83,6 +107,7 @@ class LauncherViewModel(private val container: AppContainer) : ViewModel() {
     // ---------------------------------------------------------- домашній список
 
     fun addAppToHome(app: AppInfo) = container.layoutRepository.addApp(viewModelScope, app)
+    fun toggleFavorite(app: AppInfo) = container.layoutRepository.toggleApp(viewModelScope, app)
     fun removeEntry(id: String) = container.layoutRepository.remove(viewModelScope, id)
     fun moveEntry(from: Int, to: Int) = container.layoutRepository.move(viewModelScope, from, to)
     fun renameEntry(id: String, label: String) = container.layoutRepository.rename(viewModelScope, id, label)
@@ -111,6 +136,12 @@ class LauncherViewModel(private val container: AppContainer) : ViewModel() {
     fun setIconScale(value: Float) = container.settingsRepository.setIconScale(value)
     fun setIconsOverride(value: Boolean?) = container.settingsRepository.setIconsOverride(value)
     fun toggleHidden(key: String) = container.settingsRepository.toggleHidden(key)
+
+    fun setIconStyle(style: IconStyle) = container.settingsRepository.setIconStyle(style)
+    fun setIconPack(pkg: String?) = container.settingsRepository.setIconPack(pkg)
+    fun setBackgroundMode(mode: BackgroundMode) = container.settingsRepository.setBackgroundMode(mode)
+    fun setFont(font: FontChoice) = container.settingsRepository.setFont(font)
+    fun setClockSeparator(value: String?) = container.settingsRepository.setClockSeparator(value)
 
     fun setWeatherEnabled(value: Boolean) {
         container.settingsRepository.setWeatherEnabled(value)

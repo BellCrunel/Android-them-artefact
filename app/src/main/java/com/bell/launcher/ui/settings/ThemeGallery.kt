@@ -50,10 +50,13 @@ fun ThemeGallery(
     onImport: () -> Unit,
     onBack: () -> Unit,
 ) {
+    androidx.compose.material3.Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize(),
+    ) {
     Column(
         Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
             .systemBarsPadding(),
     ) {
         Row(
@@ -92,6 +95,7 @@ fun ThemeGallery(
                 )
             }
         }
+    }
     }
 }
 

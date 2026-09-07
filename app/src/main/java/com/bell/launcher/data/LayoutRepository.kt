@@ -63,6 +63,19 @@ class LayoutRepository(private val context: Context) {
         add(scope, AppEntry(app = app.toRef()))
     }
 
+    /** Чи є додаток серед рядків головного екрана. */
+    fun isFavorite(key: String): Boolean =
+        _layout.value.entries.filterIsInstance<AppEntry>().any { it.app.key == key }
+
+    /** Додати/прибрати додаток з головного екрана одним дотиком. */
+    fun toggleApp(scope: CoroutineScope, app: AppInfo) {
+        val ref = app.toRef()
+        val existing = _layout.value.entries
+            .filterIsInstance<AppEntry>()
+            .firstOrNull { it.app.key == ref.key }
+        if (existing != null) remove(scope, existing.id) else addApp(scope, app)
+    }
+
     fun remove(scope: CoroutineScope, id: String) = update(scope) { l ->
         l.copy(entries = l.sorted.filterNot { it.id == id })
     }

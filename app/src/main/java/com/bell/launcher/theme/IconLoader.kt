@@ -9,66 +9,69 @@ import android.graphics.drawable.Drawable
 import android.util.LruCache
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import com.bell.launcher.theme.model.IconShape
+import com.bell.launcher.theme.model.IconSpec
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Єдина точка отримання іконки додатка з урахуванням активної теми.
+ * Єдина точка отримання іконки додатка.
  *
  * Порядок пошуку:
- * 1. `icons.map` з manifest.json
+ * 1. `icons.map` з manifest.json теми
  * 2. файл `<folder>/<package>.png|webp|jpg` усередині теми
- * 3. встановлений icon pack, якщо тема вказала `icons.iconPackPackage`
- * 4. системна іконка, приведена до форми теми
+ * 3. встановлений icon pack (тема або налаштування)
+ * 4. системна іконка, приведена до форми/підкладки/тінту
  */
 class IconLoader(private val context: Context) {
 
     private val pm = context.packageManager
     private var theme: LauncherThemeData? = null
+    private var spec: IconSpec = IconSpec()
     private var iconPack: IconPackLoader? = null
+    private var configKey: String = ""
     private val cache = LruCache<String, ImageBitmap>(400)
 
+    /** Тема + фактичні параметри іконок (тема, перекрита налаштуваннями). */
     @Synchronized
-    fun setTheme(newTheme: LauncherThemeData?) {
-        if (newTheme?.source?.key == theme?.source?.key && newTheme?.id == theme?.id) return
+    fun configure(newTheme: LauncherThemeData?, newSpec: IconSpec) {
+        val key = "${newTheme?.id}|${newTheme?.source?.key}|${newSpec.hashCode()}"
+        if (key == configKey) return
+        configKey = key
         theme = newTheme
+        spec = newSpec
         cache.evictAll()
-        val packName = newTheme?.manifest?.icons?.iconPackPackage
-        iconPack = packName?.takeIf { it.isNotBlank() }?.let { IconPackLoader(context, it) }
+        val packName = newSpec.iconPackPackage?.takeIf { it.isNotBlank() }
+        iconPack = packName?.let { IconPackLoader(context, it) }
     }
 
     suspend fun load(packageName: String, activityName: String, sizePx: Int): ImageBitmap? =
         withContext(Dispatchers.IO) {
-            val key = "${theme?.id}|$packageName/$activityName|$sizePx"
+            val key = "$configKey|$packageName/$activityName|$sizePx"
             cache.get(key)?.let { return@withContext it }
-            val bitmap = renderIcon(packageName, activityName, sizePx) ?: return@withContext null
+            // Помилка рендеру однієї іконки не повинна ронити весь лаунчер.
+            val bitmap = runCatching { renderIcon(packageName, activityName, sizePx) }
+                .getOrNull() ?: return@withContext null
             val image = bitmap.asImageBitmap()
             cache.put(key, image)
             image
         }
 
     private fun renderIcon(packageName: String, activityName: String, sizePx: Int): Bitmap? {
-        val current = theme
-        val spec = current?.manifest?.icons
-
         // 1 + 2: іконка, що лежить усередині теми
-        if (current != null && spec != null) {
-            themedBitmap(current, packageName, sizePx)?.let { return it }
-        }
+        theme?.let { themedBitmap(it, packageName, sizePx)?.let { bmp -> return bmp } }
 
         // 3: встановлений icon pack
         iconPack?.getIcon(packageName, activityName)?.let { drawable ->
-            return spec?.let { IconRenderer.render(drawable, it.copy(shape = com.bell.launcher.theme.model.IconShape.ORIGINAL), sizePx) }
-                ?: drawable.toBitmap(sizePx)
+            return IconRenderer.render(drawable, spec.copy(shape = IconShape.ORIGINAL), sizePx)
         }
 
         // 4: системна іконка
         val system = systemIcon(packageName, activityName) ?: return null
-        return if (spec != null) IconRenderer.render(system, spec, sizePx) else system.toBitmap(sizePx)
+        return IconRenderer.render(system, spec, sizePx)
     }
 
     private fun themedBitmap(themeData: LauncherThemeData, packageName: String, sizePx: Int): Bitmap? {
-        val spec = themeData.manifest.icons
         val candidates = buildList {
             spec.map[packageName]?.let { add(it) }
             val folder = spec.folder.trim('/')
@@ -80,7 +83,7 @@ class IconLoader(private val context: Context) {
             val stream = themeData.source.open(path) ?: continue
             val raw = stream.use { BitmapFactory.decodeStream(it) } ?: continue
             val drawable = BitmapDrawable(context.resources, raw)
-            val normalized = spec.copy(shape = com.bell.launcher.theme.model.IconShape.ORIGINAL, background = null)
+            val normalized = spec.copy(shape = IconShape.ORIGINAL, background = null)
             return IconRenderer.render(drawable, normalized, sizePx)
         }
         return null
@@ -93,12 +96,4 @@ class IconLoader(private val context: Context) {
             pm.getApplicationIcon(packageName)
         }
     }.recoverCatching { pm.getApplicationIcon(packageName) }.getOrNull()
-
-    private fun Drawable.toBitmap(sizePx: Int): Bitmap {
-        val bmp = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
-        val canvas = android.graphics.Canvas(bmp)
-        setBounds(0, 0, sizePx, sizePx)
-        draw(canvas)
-        return bmp
-    }
 }

@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +36,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.ImeAction
@@ -48,9 +51,10 @@ import com.bell.launcher.ui.components.AppIconImage
 import com.bell.launcher.ui.components.AppRow
 import com.bell.launcher.ui.components.LocalIconScale
 import com.bell.launcher.ui.components.LocalIconsOverride
+import com.bell.launcher.util.IndexLetters
 import kotlinx.coroutines.launch
 
-private const val TOP_MARK = "★"
+private const val TOP_MARK = IndexLetters.FAVORITES
 
 @Composable
 fun AppDrawer(
@@ -65,6 +69,7 @@ fun AppDrawer(
     onHide: (AppInfo) -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    focusSearch: Boolean = true,
 ) {
     val theme = LocalLauncherTheme.current
     val spec = theme.manifest.layout
@@ -73,6 +78,14 @@ fun AppDrawer(
 
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    val focusRequester = remember { FocusRequester() }
+
+    // Свайп угору відкриває шухляду вже з активним пошуком — можна одразу друкувати.
+    LaunchedEffect(Unit) {
+        if (focusSearch) {
+            runCatching { focusRequester.requestFocus() }
+        }
+    }
 
     val visible = remember(apps, hiddenApps, query) {
         apps.filter { it.key !in hiddenApps }
@@ -80,14 +93,9 @@ fun AppDrawer(
     }
 
     val letters = remember(visible) {
-        buildList {
-            add(TOP_MARK)
-            addAll(
-                visible.mapNotNull { it.label.firstOrNull()?.uppercaseChar()?.toString() }
-                    .distinct()
-                    .sorted()
-            )
-        }
+        IndexLetters.sortLetters(
+            listOf(TOP_MARK) + visible.map { IndexLetters.of(it.label) }.distinct()
+        )
     }
 
     Box(
@@ -118,7 +126,8 @@ fun AppDrawer(
                 shape = RoundedCornerShape(28.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .focusRequester(focusRequester),
             )
 
             Box(Modifier.fillMaxSize()) {
@@ -161,9 +170,7 @@ fun AppDrawer(
                                 val index = if (letter == TOP_MARK) {
                                     0
                                 } else {
-                                    visible.indexOfFirst {
-                                        it.label.firstOrNull()?.uppercaseChar()?.toString() == letter
-                                    }
+                                    visible.indexOfFirst { IndexLetters.of(it.label) == letter }
                                 }
                                 if (index >= 0) {
                                     scope.launch { listState.scrollToItem(index) }

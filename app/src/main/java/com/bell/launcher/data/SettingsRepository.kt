@@ -11,7 +11,37 @@ enum class GestureAction(val title: String) {
     EXPAND_NOTIFICATIONS("Шторка сповіщень"),
     OPEN_SETTINGS("Налаштування лаунчера"),
     OPEN_THEMES("Галерея тем"),
+    OPEN_FAVORITES("Обрані додатки"),
     OPEN_WIDGETS("Додати віджет"),
+}
+
+/** Готові стилі іконок, які перекривають те, що задано в темі. */
+enum class IconStyle(val title: String) {
+    THEME("Як у темі"),
+    CIRCLE("Круглі"),
+    SQUIRCLE("Squircle"),
+    TILE("Плитки"),
+    MONO("Монохром"),
+    ORIGINAL("Без обробки"),
+}
+
+/** Що малювати позаду списку. */
+enum class BackgroundMode(val title: String) {
+    SYSTEM("Системні шпалери"),
+    THEME("Фон із теми"),
+}
+
+/** Шрифти, доступні на будь-якому Android без завантаження. */
+enum class FontChoice(val title: String, val deviceName: String?) {
+    THEME("Як у темі", null),
+    SANS("Системний", "sans-serif"),
+    CONDENSED("Вузький", "sans-serif-condensed"),
+    LIGHT("Тонкий", "sans-serif-light"),
+    MEDIUM("Напівжирний", "sans-serif-medium"),
+    BLACK("Жирний", "sans-serif-black"),
+    SERIF("Serif", "serif"),
+    MONOSPACE("Моноширинний", "monospace"),
+    CURSIVE("Рукописний", "cursive"),
 }
 
 data class LauncherSettings(
@@ -22,6 +52,13 @@ data class LauncherSettings(
     val iconScale: Float = 1f,
     val showIconsOverride: Boolean? = null,
     val hiddenApps: Set<String> = emptySet(),
+    // вигляд
+    val iconStyle: IconStyle = IconStyle.THEME,
+    val iconPackPackage: String? = null,
+    val backgroundMode: BackgroundMode = BackgroundMode.SYSTEM,
+    val fontChoice: FontChoice = FontChoice.THEME,
+    /** null = як у темі; інакше "" (1433), ":" (14:33) або " " (14 33). */
+    val clockSeparator: String? = ":",
     // погода
     val weatherEnabled: Boolean = true,
     val useLocation: Boolean = true,
@@ -39,12 +76,17 @@ class SettingsRepository(context: Context) {
 
     private fun read(): LauncherSettings = LauncherSettings(
         themeId = prefs.getString(KEY_THEME, null),
-        swipeUp = gesture(KEY_SWIPE_UP, GestureAction.OPEN_DRAWER),
-        swipeDown = gesture(KEY_SWIPE_DOWN, GestureAction.EXPAND_NOTIFICATIONS),
-        twoFingerSwipeDown = gesture(KEY_TWO_FINGER, GestureAction.OPEN_SETTINGS),
+        swipeUp = enumOr(KEY_SWIPE_UP, GestureAction.OPEN_DRAWER),
+        swipeDown = enumOr(KEY_SWIPE_DOWN, GestureAction.EXPAND_NOTIFICATIONS),
+        twoFingerSwipeDown = enumOr(KEY_TWO_FINGER, GestureAction.OPEN_SETTINGS),
         iconScale = prefs.getFloat(KEY_ICON_SCALE, 1f),
         showIconsOverride = if (prefs.contains(KEY_ICONS)) prefs.getBoolean(KEY_ICONS, true) else null,
         hiddenApps = prefs.getStringSet(KEY_HIDDEN, emptySet())?.toSet() ?: emptySet(),
+        iconStyle = enumOr(KEY_ICON_STYLE, IconStyle.THEME),
+        iconPackPackage = prefs.getString(KEY_ICON_PACK, null)?.ifBlank { null },
+        backgroundMode = enumOr(KEY_BACKGROUND, BackgroundMode.SYSTEM),
+        fontChoice = enumOr(KEY_FONT, FontChoice.THEME),
+        clockSeparator = if (prefs.contains(KEY_CLOCK_SEP)) prefs.getString(KEY_CLOCK_SEP, ":") else ":",
         weatherEnabled = prefs.getBoolean(KEY_WEATHER, true),
         useLocation = prefs.getBoolean(KEY_USE_LOCATION, true),
         manualCity = prefs.getString(KEY_CITY, "").orEmpty(),
@@ -52,8 +94,8 @@ class SettingsRepository(context: Context) {
         manualLon = if (prefs.contains(KEY_LON)) prefs.getFloat(KEY_LON, 0f).toDouble() else null,
     )
 
-    private fun gesture(key: String, default: GestureAction): GestureAction =
-        runCatching { GestureAction.valueOf(prefs.getString(key, default.name)!!) }.getOrDefault(default)
+    private inline fun <reified T : Enum<T>> enumOr(key: String, default: T): T =
+        runCatching { enumValueOf<T>(prefs.getString(key, default.name)!!) }.getOrDefault(default)
 
     private fun mutate(block: (LauncherSettings) -> LauncherSettings) {
         val next = block(_settings.value)
@@ -65,6 +107,11 @@ class SettingsRepository(context: Context) {
             putFloat(KEY_ICON_SCALE, next.iconScale)
             if (next.showIconsOverride == null) remove(KEY_ICONS) else putBoolean(KEY_ICONS, next.showIconsOverride)
             putStringSet(KEY_HIDDEN, next.hiddenApps)
+            putString(KEY_ICON_STYLE, next.iconStyle.name)
+            putString(KEY_ICON_PACK, next.iconPackPackage.orEmpty())
+            putString(KEY_BACKGROUND, next.backgroundMode.name)
+            putString(KEY_FONT, next.fontChoice.name)
+            if (next.clockSeparator == null) remove(KEY_CLOCK_SEP) else putString(KEY_CLOCK_SEP, next.clockSeparator)
             putBoolean(KEY_WEATHER, next.weatherEnabled)
             putBoolean(KEY_USE_LOCATION, next.useLocation)
             putString(KEY_CITY, next.manualCity)
@@ -90,6 +137,12 @@ class SettingsRepository(context: Context) {
         it.copy(hiddenApps = if (key in it.hiddenApps) it.hiddenApps - key else it.hiddenApps + key)
     }
 
+    fun setIconStyle(style: IconStyle) = mutate { it.copy(iconStyle = style) }
+    fun setIconPack(pkg: String?) = mutate { it.copy(iconPackPackage = pkg?.ifBlank { null }) }
+    fun setBackgroundMode(mode: BackgroundMode) = mutate { it.copy(backgroundMode = mode) }
+    fun setFont(font: FontChoice) = mutate { it.copy(fontChoice = font) }
+    fun setClockSeparator(value: String?) = mutate { it.copy(clockSeparator = value) }
+
     fun setWeatherEnabled(value: Boolean) = mutate { it.copy(weatherEnabled = value) }
     fun setUseLocation(value: Boolean) = mutate { it.copy(useLocation = value) }
     fun setManualPlace(city: String, lat: Double?, lon: Double?) = mutate {
@@ -104,6 +157,11 @@ class SettingsRepository(context: Context) {
         private const val KEY_ICON_SCALE = "icon_scale"
         private const val KEY_ICONS = "show_icons"
         private const val KEY_HIDDEN = "hidden_apps"
+        private const val KEY_ICON_STYLE = "icon_style"
+        private const val KEY_ICON_PACK = "icon_pack"
+        private const val KEY_BACKGROUND = "background_mode"
+        private const val KEY_FONT = "font_choice"
+        private const val KEY_CLOCK_SEP = "clock_separator"
         private const val KEY_WEATHER = "weather_enabled"
         private const val KEY_USE_LOCATION = "weather_use_location"
         private const val KEY_CITY = "weather_city"
