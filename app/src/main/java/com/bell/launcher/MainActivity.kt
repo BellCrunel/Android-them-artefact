@@ -1,6 +1,9 @@
 package com.bell.launcher
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -9,7 +12,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.view.WindowCompat
@@ -17,6 +23,7 @@ import com.bell.launcher.theme.LauncherTheme
 import com.bell.launcher.theme.LauncherThemeData
 import com.bell.launcher.theme.ThemeSource
 import com.bell.launcher.theme.model.ThemeManifest
+import com.bell.launcher.ui.CrashScreen
 import com.bell.launcher.ui.LauncherRoot
 import com.bell.launcher.ui.LauncherViewModel
 import com.bell.launcher.ui.Overlay
@@ -31,6 +38,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private val widgetController = WidgetController(this)
+
+    private var crashMode = false
 
     private val importThemeLauncher =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -57,8 +66,30 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        CrashLog.step(this, "MainActivity.onCreate")
+
+        // На деяких прошивках це може кинути виняток — лаунчеру важливіше запуститися.
+        runCatching {
+            enableEdgeToEdge()
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+        }.onFailure { CrashLog.step(this, "edgeToEdge ПОМИЛКА: ${it.javaClass.simpleName}") }
+        CrashLog.step(this, "edgeToEdge ok")
+
+        val app = application as LauncherApp
+        val report = CrashLog.report(this)
+
+        if (report != null || !app.isReady) {
+            crashMode = true
+            CrashLog.step(this, "показую екран діагностики")
+            showDiagnosticScreen(
+                report ?: "Не вдалося ініціалізувати лаунчер (AppContainer == null).",
+            )
+            return
+        }
+
+        CrashLog.step(this, "ViewModel: створення")
+        viewModel.hashCode()
+        CrashLog.step(this, "ViewModel: готово, викликаю setContent")
 
         setContent {
             val state by viewModel.state.collectAsState()
@@ -75,6 +106,31 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+
+            LaunchedEffect(Unit) {
+                CrashLog.markReady(this@MainActivity)
+            }
+        }
+    }
+
+    private fun showDiagnosticScreen(text: String) {
+        setContent {
+            MaterialTheme(colorScheme = darkColorScheme()) {
+                CrashScreen(
+                    text = text,
+                    externalPath = CrashLog.externalPath(this),
+                    onCopy = {
+                        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        clipboard.setPrimaryClip(ClipData.newPlainText("Bell Launcher", text))
+                        toast("Скопійовано")
+                    },
+                    onContinue = {
+                        CrashLog.clear(this)
+                        recreate()
+                    },
+                )
+            }
+            LaunchedEffect(Unit) { CrashLog.markReady(this@MainActivity) }
         }
     }
 
@@ -85,16 +141,16 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        widgetController.startListening()
+        if (!crashMode) widgetController.startListening()
     }
 
     override fun onResume() {
         super.onResume()
-        viewModel.refreshWeather()
+        if (!crashMode) viewModel.refreshWeather()
     }
 
     override fun onStop() {
-        widgetController.stopListening()
+        if (!crashMode) widgetController.stopListening()
         super.onStop()
     }
 
@@ -102,6 +158,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        if (crashMode) return
         if (viewModel.overlay.value != Overlay.NONE) viewModel.closeOverlay()
     }
 

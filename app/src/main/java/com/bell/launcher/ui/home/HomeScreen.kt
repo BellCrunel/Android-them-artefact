@@ -79,6 +79,19 @@ fun HomeScreen(
             }
         }
 
+        if (entries.isEmpty()) {
+            item(key = "__empty__") {
+                Column(emptyAreaModifier.fillMaxWidth().padding(horizontal = padH)) {
+                    Text(
+                        text = "Порожньо. Проведіть вгору, щоб відкрити список додатків,\n" +
+                            "далі довгий тап по додатку → «На головний екран».",
+                        color = parseColor(theme.manifest.colors.homeLabel, Color.White)
+                            .copy(alpha = 0.7f),
+                    )
+                }
+            }
+        }
+
         itemsIndexed(entries, key = { _, entry -> entry.id }) { index, entry ->
             Column(Modifier.fillMaxWidth().padding(horizontal = padH)) {
                 HomeRow(
