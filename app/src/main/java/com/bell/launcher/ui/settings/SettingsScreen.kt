@@ -50,6 +50,8 @@ fun SettingsScreen(
     onOpenHidden: () -> Unit,
     onOpenFavorites: () -> Unit,
     onAddWidget: () -> Unit,
+    onRailSide: (Boolean) -> Unit,
+    onRailFeedback: (Boolean) -> Unit,
     onGesture: (GestureSlot, GestureAction) -> Unit,
     onWeatherEnabled: (Boolean) -> Unit,
     onUseLocation: (Boolean) -> Unit,
@@ -99,6 +101,20 @@ fun SettingsScreen(
                     onClick = onOpenFavorites,
                 )
                 RowItem(title = "Додати віджет", subtitle = "Обрати зі списку системи", onClick = onAddWidget)
+
+                ChoiceItem(
+                    title = "Смуга алфавіту",
+                    current = if (settings.railOnLeft) "Зліва" else "Справа",
+                    options = listOf("Справа" to false, "Зліва" to true),
+                    subtitle = "Протилежний край теж не реагує на свайпи — " +
+                        "список можна гортати будь-якою рукою",
+                    onSelect = onRailSide,
+                )
+                SwitchItem(
+                    title = "Відгук при гортанні алфавіту",
+                    checked = settings.railFeedback,
+                    onChange = onRailFeedback,
+                )
 
                 HorizontalDivider(Modifier.padding(vertical = 8.dp))
                 SectionTitle("Сповіщення")

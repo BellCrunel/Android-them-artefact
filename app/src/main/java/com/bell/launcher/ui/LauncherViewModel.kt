@@ -185,6 +185,8 @@ class LauncherViewModel(private val container: AppContainer) : ViewModel() {
         container.wallpaperRepository.load(fileName, maxWidth)
     fun setFont(font: FontChoice) = container.settingsRepository.setFont(font)
     fun setClockSeparator(value: String?) = container.settingsRepository.setClockSeparator(value)
+    fun setRailOnLeft(value: Boolean) = container.settingsRepository.setRailOnLeft(value)
+    fun setRailFeedback(value: Boolean) = container.settingsRepository.setRailFeedback(value)
 
     fun setWeatherEnabled(value: Boolean) {
         container.settingsRepository.setWeatherEnabled(value)

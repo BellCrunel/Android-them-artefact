@@ -68,6 +68,7 @@ import com.bell.launcher.ui.folder.RenameDialog
 import com.bell.launcher.ui.gestures.launcherGestures
 import com.bell.launcher.ui.home.HomeRowAction
 import com.bell.launcher.ui.home.HomeScreen
+import com.bell.launcher.ui.home.HomeScrollState
 import com.bell.launcher.ui.home.RAIL_WIDTH
 import com.bell.launcher.ui.settings.AppearanceScreen
 import com.bell.launcher.ui.settings.FavoritesScreen
@@ -111,6 +112,8 @@ fun LauncherRoot(
     val folders = state.layout.sorted.filterIsInstance<FolderEntry>()
     val iconPacks = remember { viewModel.installedIconPacks() }
     val railWidthPx = with(LocalDensity.current) { RAIL_WIDTH.toPx() }
+    // Видимий список сам повідомляє, чи є куди гортати.
+    val homeScroll = remember { HomeScrollState() }
 
     fun launch(ref: AppRef) {
         viewModel.appRepository.launch(ref.packageName, ref.activityName)
@@ -183,6 +186,7 @@ fun LauncherRoot(
                 state = state,
                 weather = weather,
                 listState = listState,
+                scrollState = homeScroll,
                 notifications = notifications,
                 onLaunch = ::launch,
                 onAction = ::handleRowAction,
@@ -191,13 +195,24 @@ fun LauncherRoot(
                 onOpenNotification = { viewModel.openNotification(it) },
                 onDismissNotification = { viewModel.dismissNotification(it) },
                 modifier = Modifier.launcherGestures(
-                    onSwipeUp = { if (overlay == Overlay.NONE) runAction(state.settings.swipeUp) },
-                    onSwipeDown = { if (overlay == Overlay.NONE) runAction(state.settings.swipeDown) },
+                    // Поки список має куди гортатися, свайп його гортає —
+                    // жест лаунчера спрацьовує лише на межі прокрутки.
+                    onSwipeUp = {
+                        if (overlay == Overlay.NONE && !homeScroll.canScrollForward) {
+                            runAction(state.settings.swipeUp)
+                        }
+                    },
+                    onSwipeDown = {
+                        if (overlay == Overlay.NONE && !homeScroll.canScrollBackward) {
+                            runAction(state.settings.swipeDown)
+                        }
+                    },
                     onTwoFingerSwipeDown = {
                         if (overlay == Overlay.NONE) runAction(state.settings.twoFingerSwipeDown)
                     },
-                    // Смуга алфавіту справа: там жести лаунчера мовчать
+                    // Обидва бічні краї — зони під палець: там жести лаунчера мовчать.
                     excludeRightPx = railWidthPx,
+                    excludeLeftPx = railWidthPx,
                 ),
             )
 
@@ -250,6 +265,8 @@ fun LauncherRoot(
                     onOpenHidden = { viewModel.openOverlay(Overlay.HIDDEN_APPS) },
                     onOpenFavorites = { viewModel.openOverlay(Overlay.FAVORITES) },
                     onAddWidget = { viewModel.closeOverlay(); addWidget() },
+                    onRailSide = { viewModel.setRailOnLeft(it) },
+                    onRailFeedback = { viewModel.setRailFeedback(it) },
                     onGesture = { slot, action -> viewModel.setGesture(slot, action) },
                     onWeatherEnabled = { viewModel.setWeatherEnabled(it) },
                     onUseLocation = { enabled ->

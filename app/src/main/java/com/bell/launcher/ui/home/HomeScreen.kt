@@ -26,11 +26,14 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,11 +64,29 @@ import com.bell.launcher.ui.components.SwipeableRow
 import com.bell.launcher.ui.widget.LocalWidgetController
 import com.bell.launcher.util.IndexLetters
 
+/**
+ * Чи може зараз гортатися видимий список.
+ *
+ * Потрібно, щоб жести лаунчера не змагалися з прокруткою: поки список має куди
+ * гортатися, свайп угору його гортає, і лише в самому кінці відкриває пошук.
+ */
+@Stable
+class HomeScrollState {
+    var canScrollForward by mutableStateOf(false)
+    var canScrollBackward by mutableStateOf(false)
+
+    fun reset() {
+        canScrollForward = false
+        canScrollBackward = false
+    }
+}
+
 @Composable
 fun HomeScreen(
     state: LauncherUiState,
     weather: Weather?,
     listState: LazyListState,
+    scrollState: HomeScrollState,
     notifications: Map<String, AppNotification>,
     onLaunch: (AppRef) -> Unit,
     onAction: (HomeEntry, HomeRowAction) -> Unit,
@@ -93,6 +114,14 @@ fun HomeScreen(
 
     var activeLetter by remember { mutableStateOf<String?>(null) }
 
+    val railLeft = state.settings.railOnLeft
+    // Смуга алфавіту з'їдає свій край — текст рядків туди не заходить.
+    val listPadding = if (railLeft) {
+        PaddingValues(start = 72.dp)
+    } else {
+        PaddingValues(end = 72.dp)
+    }
+
     Box(modifier.fillMaxSize()) {
 
         // Crossfade перемикається лише між «обрані» і «режим літери».
@@ -111,6 +140,8 @@ fun HomeScreen(
                     state = state,
                     weather = weather,
                     listState = listState,
+                    scrollState = scrollState,
+                    contentPadding = listPadding,
                     notifications = notifications,
                     padH = padH,
                     onLaunch = onLaunch,
@@ -125,6 +156,8 @@ fun HomeScreen(
                 LetterList(
                     letter = letter,
                     apps = grouped[letter].orEmpty(),
+                    scrollState = scrollState,
+                    railLeft = railLeft,
                     notifications = notifications,
                     padH = padH,
                     labelColor = labelColor,
@@ -145,10 +178,16 @@ fun HomeScreen(
             bubbleTextColor = parseColor(theme.manifest.colors.onSurface, Color.White),
             onActiveChange = { activeLetter = it },
             onRelease = { /* лишаємо літеру, щоб можна було натиснути додаток */ },
+            onLeft = railLeft,
+            feedback = state.settings.railFeedback,
             modifier = Modifier
-                .align(Alignment.BottomEnd)
+                .align(if (railLeft) Alignment.BottomStart else Alignment.BottomEnd)
                 .systemBarsPadding()
-                .padding(end = 2.dp, bottom = 64.dp),
+                .padding(
+                    start = if (railLeft) 2.dp else 0.dp,
+                    end = if (railLeft) 0.dp else 2.dp,
+                    bottom = 64.dp,
+                ),
         )
     }
 }
@@ -160,6 +199,8 @@ private fun FavoritesList(
     state: LauncherUiState,
     weather: Weather?,
     listState: LazyListState,
+    scrollState: HomeScrollState,
+    contentPadding: PaddingValues,
     notifications: Map<String, AppNotification>,
     padH: androidx.compose.ui.unit.Dp,
     onLaunch: (AppRef) -> Unit,
@@ -178,13 +219,38 @@ private fun FavoritesList(
         detectTapGestures(onLongPress = { onLongPressEmpty() })
     }
 
+    // Головний екран за замовчуванням не гортається: інакше свайп угору
+    // (жест відкриття пошуку) піднімав би годинник у самий верх.
+    // Але якщо обраних більше, ніж влазить у екран, гортання вмикається —
+    // інакше до нижніх додатків просто не дістатися.
+    var overflows by remember(entries.size) { mutableStateOf(false) }
+    LaunchedEffect(entries.size, listState) {
+        snapshotFlow { listState.layoutInfo }.collect { info ->
+            if (overflows) return@collect
+            // Останній «справжній» рядок — перед службовим хвостом __tail__.
+            val lastRealIndex = info.totalItemsCount - 2
+            if (lastRealIndex < 0) return@collect
+            val item = info.visibleItemsInfo.firstOrNull { it.index == lastRealIndex }
+            overflows = item == null || item.offset + item.size > info.viewportEndOffset
+        }
+    }
+
+    // Поки список не гортається, жести лаунчера мають працювати як раніше.
+    LaunchedEffect(overflows) { if (!overflows) scrollState.reset() }
+    LaunchedEffect(overflows, listState) {
+        if (!overflows) return@LaunchedEffect
+        snapshotFlow { listState.canScrollForward to listState.canScrollBackward }
+            .collect { (forward, backward) ->
+                scrollState.canScrollForward = forward
+                scrollState.canScrollBackward = backward
+            }
+    }
+
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize().systemBarsPadding(),
-        contentPadding = PaddingValues(end = 72.dp),
-        // Головний екран не скролиться: інакше свайп угору (перед відкриттям пошуку)
-        // піднімав би годинник у самий верх. Довгі списки — це вже алфавіт.
-        userScrollEnabled = false,
+        contentPadding = contentPadding,
+        userScrollEnabled = overflows,
     ) {
         item(key = "__header__") {
             Box(emptyAreaModifier.fillMaxWidth().padding(horizontal = padH)) {
@@ -235,7 +301,9 @@ private fun FavoritesList(
         }
 
         item(key = "__tail__") {
-            Box(emptyAreaModifier.fillMaxWidth().height(220.dp))
+            // Порожня зона для довгого тапу. Коли список і так довший за екран,
+            // тримати тут 220 dp порожнечі немає сенсу — це зайве гортання.
+            Box(emptyAreaModifier.fillMaxWidth().height(if (overflows) 24.dp else 220.dp))
         }
     }
 }
@@ -246,6 +314,8 @@ private fun FavoritesList(
 private fun LetterList(
     letter: String,
     apps: List<AppInfo>,
+    scrollState: HomeScrollState,
+    railLeft: Boolean,
     notifications: Map<String, AppNotification>,
     padH: androidx.compose.ui.unit.Dp,
     labelColor: Color,
@@ -264,6 +334,18 @@ private fun LetterList(
     // Нова літера — список починається згори, без анімації прокрутки
     LaunchedEffect(letter) { listState.scrollToItem(0) }
 
+    // Повідомляємо назовні, чи є куди гортати: поки є, свайп угору гортає
+    // список, а не відкриває пошук. Раніше довгий список на одну літеру
+    // прогорнути було неможливо — жест перехоплював лаунчер.
+    DisposableEffect(Unit) { onDispose { scrollState.reset() } }
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.canScrollForward to listState.canScrollBackward }
+            .collect { (forward, backward) ->
+                scrollState.canScrollForward = forward
+                scrollState.canScrollBackward = backward
+            }
+    }
+
     Box(
         Modifier
             .fillMaxSize()
@@ -272,7 +354,12 @@ private fun LetterList(
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize().systemBarsPadding(),
-            contentPadding = PaddingValues(top = 150.dp, bottom = 80.dp, end = 72.dp),
+            contentPadding = PaddingValues(
+                top = 150.dp,
+                bottom = 80.dp,
+                start = if (railLeft) 72.dp else 0.dp,
+                end = if (railLeft) 0.dp else 72.dp,
+            ),
         ) {
             item(key = "__letter__") {
                 Text(

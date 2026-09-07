@@ -70,6 +70,11 @@ data class LauncherSettings(
     val fontChoice: FontChoice = FontChoice.THEME,
     /** null = як у темі; інакше "" (1433), ":" (14:33) або " " (14 33). */
     val clockSeparator: String? = ":",
+    // алфавітна смуга
+    /** Смуга алфавіту ліворуч замість правого краю. */
+    val railOnLeft: Boolean = false,
+    /** Клац і легка вібрація при протягуванні по алфавіту. */
+    val railFeedback: Boolean = true,
     // погода
     val weatherEnabled: Boolean = true,
     val useLocation: Boolean = true,
@@ -100,6 +105,8 @@ class SettingsRepository(context: Context) {
         wallpaperDim = prefs.getFloat(KEY_WALLPAPER_DIM, 0.25f),
         fontChoice = enumOr(KEY_FONT, FontChoice.THEME),
         clockSeparator = if (prefs.contains(KEY_CLOCK_SEP)) prefs.getString(KEY_CLOCK_SEP, ":") else ":",
+        railOnLeft = prefs.getBoolean(KEY_RAIL_LEFT, false),
+        railFeedback = prefs.getBoolean(KEY_RAIL_FEEDBACK, true),
         weatherEnabled = prefs.getBoolean(KEY_WEATHER, true),
         useLocation = prefs.getBoolean(KEY_USE_LOCATION, true),
         manualCity = prefs.getString(KEY_CITY, "").orEmpty(),
@@ -127,6 +134,8 @@ class SettingsRepository(context: Context) {
             putFloat(KEY_WALLPAPER_DIM, next.wallpaperDim)
             putString(KEY_FONT, next.fontChoice.name)
             if (next.clockSeparator == null) remove(KEY_CLOCK_SEP) else putString(KEY_CLOCK_SEP, next.clockSeparator)
+            putBoolean(KEY_RAIL_LEFT, next.railOnLeft)
+            putBoolean(KEY_RAIL_FEEDBACK, next.railFeedback)
             putBoolean(KEY_WEATHER, next.weatherEnabled)
             putBoolean(KEY_USE_LOCATION, next.useLocation)
             putString(KEY_CITY, next.manualCity)
@@ -164,6 +173,8 @@ class SettingsRepository(context: Context) {
     fun setWallpaperDim(value: Float) = mutate { it.copy(wallpaperDim = value.coerceIn(0f, 0.85f)) }
     fun setFont(font: FontChoice) = mutate { it.copy(fontChoice = font) }
     fun setClockSeparator(value: String?) = mutate { it.copy(clockSeparator = value) }
+    fun setRailOnLeft(value: Boolean) = mutate { it.copy(railOnLeft = value) }
+    fun setRailFeedback(value: Boolean) = mutate { it.copy(railFeedback = value) }
 
     fun setWeatherEnabled(value: Boolean) = mutate { it.copy(weatherEnabled = value) }
     fun setUseLocation(value: Boolean) = mutate { it.copy(useLocation = value) }
@@ -186,6 +197,8 @@ class SettingsRepository(context: Context) {
         private const val KEY_WALLPAPER_DIM = "wallpaper_dim"
         private const val KEY_FONT = "font_choice"
         private const val KEY_CLOCK_SEP = "clock_separator"
+        private const val KEY_RAIL_LEFT = "rail_on_left"
+        private const val KEY_RAIL_FEEDBACK = "rail_feedback"
         private const val KEY_WEATHER = "weather_enabled"
         private const val KEY_USE_LOCATION = "weather_use_location"
         private const val KEY_CITY = "weather_city"

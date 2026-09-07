@@ -12,23 +12,34 @@ import kotlin.math.abs
  * Спостерігач жестів, який НЕ споживає події — тому список, іконки та віджети
  * продовжують працювати як завжди.
  *
- * [excludeRightPx] — смуга вздовж правого краю, де жести лаунчера ігноруються.
- * Там живе алфавітний покажчик: без цієї зони протягування по літерах угору
- * відкривало б пошук, а вниз — шторку сповіщень.
+ * [excludeRightPx] і [excludeLeftPx] — смуги вздовж бічних країв, де жести
+ * лаунчера ігноруються. В одній із них живе алфавітний покажчик: без цієї зони
+ * протягування по літерах угору відкривало б пошук, а вниз — шторку сповіщень.
+ * Друга смуга — дзеркальна зона під палець іншої руки: там список можна
+ * спокійно гортати, не боячись зачепити жест.
  */
 fun Modifier.launcherGestures(
     onSwipeUp: () -> Unit,
     onSwipeDown: () -> Unit,
     onTwoFingerSwipeDown: () -> Unit,
     excludeRightPx: Float = 0f,
-): Modifier = this.pointerInput(onSwipeUp, onSwipeDown, onTwoFingerSwipeDown, excludeRightPx) {
+    excludeLeftPx: Float = 0f,
+): Modifier = this.pointerInput(
+    onSwipeUp,
+    onSwipeDown,
+    onTwoFingerSwipeDown,
+    excludeRightPx,
+    excludeLeftPx,
+) {
     val threshold = viewConfiguration.touchSlop * 3.5f
 
     awaitEachGesture {
         val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
 
-        // Дотик почався в зоні алфавіту — цей жест не наш
-        if (excludeRightPx > 0f && down.position.x > size.width - excludeRightPx) {
+        // Дотик почався в бічній зоні — цей жест не наш
+        val inRight = excludeRightPx > 0f && down.position.x > size.width - excludeRightPx
+        val inLeft = excludeLeftPx > 0f && down.position.x < excludeLeftPx
+        if (inRight || inLeft) {
             while (true) {
                 val event = awaitPointerEvent(PointerEventPass.Initial)
                 if (event.changes.none { it.pressed }) break

@@ -1,5 +1,7 @@
 package com.bell.launcher.ui.home
 
+import android.view.HapticFeedbackConstants
+import android.view.SoundEffectConstants
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -28,6 +30,7 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -44,7 +47,7 @@ val RAIL_WIDTH = 76.dp
 private val BUBBLE_SIZE = 46.dp
 
 /**
- * Алфавітний покажчик уздовж правого краю.
+ * Алфавітний покажчик уздовж бічного краю (правого або лівого).
  *
  * Продуктивність: деформація літер рахується в [graphicsLayer], а не в тілі
  * composable. Читання позиції пальця всередині graphicsLayer відкладає
@@ -61,6 +64,10 @@ fun LetterRail(
     onActiveChange: (String) -> Unit,
     onRelease: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Смуга ліворуч — дзеркальне розташування для лівої руки. */
+    onLeft: Boolean = false,
+    /** Тихий клац і легка вібрація на кожній новій літері. */
+    feedback: Boolean = true,
 ) {
     if (letters.isEmpty()) return
 
@@ -71,6 +78,10 @@ fun LetterRail(
     val amplitudePx = with(density) { 78.dp.toPx() }
     val spreadPx = with(density) { 96.dp.toPx() }
 
+    // Системний View потрібен, щоб клац і вібрація підкорялися налаштуванням
+    // телефона: у беззвучному режимі звуку не буде, з вимкненою вібрацією — тряски.
+    val view = LocalView.current
+
     val pointerY = remember { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
 
@@ -80,23 +91,38 @@ fun LetterRail(
         label = "bend",
     )
 
+    // Ліворуч літери вигинаються вправо, праворуч — вліво.
+    val direction = if (onLeft) 1f else -1f
+    val origin = if (onLeft) TransformOrigin(0f, 0.5f) else TransformOrigin(1f, 0.5f)
+
     Box(modifier) {
         Column(
             modifier = Modifier
                 .height(ITEM_HEIGHT * letters.size)
                 .width(RAIL_WIDTH)
-                .pointerInput(letters) {
+                .pointerInput(letters, feedback) {
                     awaitEachGesture {
                         val down = awaitFirstDown()
                         down.consume()
                         dragging = true
+
+                        // Літера, на якій палець стоїть зараз. Порівнювати з [active]
+                        // не можна: воно приходить назад через рекомпозицію із
+                        // затримкою, і на швидкому русі клац лунав би двічі.
+                        var current: String? = null
 
                         fun pick(y: Float) {
                             pointerY.floatValue = y.coerceIn(0f, itemPx * letters.size)
                             val index = (pointerY.floatValue / itemPx).toInt()
                                 .coerceIn(0, letters.size - 1)
                             val letter = letters[index]
-                            if (letter != active) onActiveChange(letter)
+                            if (letter == current) return
+                            current = letter
+                            if (feedback) {
+                                view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                                view.playSoundEffect(SoundEffectConstants.CLICK)
+                            }
+                            onActiveChange(letter)
                         }
 
                         pick(down.position.y)
@@ -122,8 +148,8 @@ fun LetterRail(
                     Modifier
                         .height(ITEM_HEIGHT)
                         .fillMaxWidth()
-                        .padding(end = 12.dp),
-                    contentAlignment = Alignment.CenterEnd,
+                        .padding(start = if (onLeft) 12.dp else 0.dp, end = if (onLeft) 0.dp else 12.dp),
+                    contentAlignment = if (onLeft) Alignment.CenterStart else Alignment.CenterEnd,
                 ) {
                     Text(
                         text = letter,
@@ -136,11 +162,11 @@ fun LetterRail(
                             val ratio = distance / spreadPx
                             val falloff = exp(-ratio * ratio)
 
-                            translationX = -amplitudePx * falloff * bend
+                            translationX = direction * amplitudePx * falloff * bend
                             val grow = 1f + 0.55f * falloff * bend
                             scaleX = grow
                             scaleY = grow
-                            transformOrigin = TransformOrigin(1f, 0.5f)
+                            transformOrigin = origin
                             alpha = (0.26f + 0.48f * bend + 0.26f * falloff * bend)
                                 .coerceAtMost(1f)
                         },
@@ -152,10 +178,11 @@ fun LetterRail(
         if (dragging && active != null) {
             Box(
                 Modifier
-                    .align(Alignment.TopEnd)
+                    .align(if (onLeft) Alignment.TopStart else Alignment.TopEnd)
                     .offset {
                         IntOffset(
-                            x = -bubbleShiftPx.roundToInt(),
+                            // Бульбашка завжди зсувається всередину екрана.
+                            x = (direction * bubbleShiftPx).roundToInt(),
                             y = (pointerY.floatValue - bubbleHalfPx).roundToInt(),
                         )
                     }
