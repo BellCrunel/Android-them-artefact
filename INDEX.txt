@@ -1,0 +1,12 @@
+total 56
+drwxr-xr-x  2 runner runner  4096 Sep  7 17:32 .
+drwxr-xr-x 15 runner runner  4096 Sep  7 17:32 ..
+-rw-r--r--  1 runner runner     0 Sep  7 17:32 INDEX.txt
+-rw-r--r--  1 runner runner 14850 Sep  7 17:32 SUMMARY.txt
+-rw-r--r--  1 runner runner     6 Sep  7 17:32 android-version.txt
+-rw-r--r--  1 runner runner     0 Sep  7 17:32 app-last_crash.txt
+-rw-r--r--  1 runner runner   753 Sep  7 17:32 app-startup_trace-run2.txt
+-rw-r--r--  1 runner runner   753 Sep  7 17:32 app-startup_trace.txt
+-rw-r--r--  1 runner runner     0 Sep  7 17:32 logcat-run1-crash.txt
+-rw-r--r--  1 runner runner 13942 Sep  7 17:32 logcat-run1-filtered.txt
+-rw-r--r--  1 runner runner  2243 Sep  7 17:32 steps.txt

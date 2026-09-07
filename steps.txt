@@ -1,0 +1,63 @@
++ adb wait-for-device
++ adb shell 'while [ "$(getprop sys.boot_completed)" != "1" ]; do sleep 2; done'
++ adb shell getprop ro.build.version.release
++ adb shell getprop ro.build.version.sdk
+++ ls app/build/outputs/apk/debug/app-debug.apk
+++ head -1
++ APK=app/build/outputs/apk/debug/app-debug.apk
++ echo 'APK: app/build/outputs/apk/debug/app-debug.apk'
+APK: app/build/outputs/apk/debug/app-debug.apk
++ adb install -r -t app/build/outputs/apk/debug/app-debug.apk
+Performing Streamed Install
+Success
++ adb logcat -c
++ adb shell am start -W -n com.bell.launcher.debug/com.bell.launcher.MainActivity
+Starting: Intent { cmp=com.bell.launcher.debug/com.bell.launcher.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.bell.launcher.debug/com.bell.launcher.MainActivity
+TotalTime: 4483
+WaitTime: 4515
+Complete
++ sleep 20
++ adb logcat -d
++ adb logcat -d -b crash
++ adb exec-out screencap -p
++ grep -inE 'bell\.launcher|AndroidRuntime|FATAL EXCEPTION|Caused by|ANR in' smoke-out/logcat-run1-full.txt
++ adb shell run-as com.bell.launcher.debug cat files/last_crash.txt
+cat: files/last_crash.txt: No such file or directory
++ true
++ adb shell run-as com.bell.launcher.debug cat files/startup_trace.txt
++ adb shell am force-stop com.bell.launcher.debug
++ sleep 2
++ adb logcat -c
++ adb shell am start -W -n com.bell.launcher.debug/com.bell.launcher.MainActivity
+Starting: Intent { cmp=com.bell.launcher.debug/com.bell.launcher.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.bell.launcher.debug/com.bell.launcher.MainActivity
+TotalTime: 2163
+WaitTime: 2185
+Complete
++ sleep 15
++ adb exec-out screencap -p
++ adb logcat -d
++ adb shell run-as com.bell.launcher.debug cat files/last_crash.txt
+cat: files/last_crash.txt: No such file or directory
++ true
++ adb shell run-as com.bell.launcher.debug cat files/startup_trace.txt
++ echo '===== ANDROID ====='
++ cat smoke-out/android-version.txt
++ echo
++ echo '===== app-last_crash.txt ====='
++ cat smoke-out/app-last_crash.txt
++ echo
++ echo '===== app-startup_trace.txt ====='
++ cat smoke-out/app-startup_trace.txt
++ echo
++ echo '===== logcat crash buffer ====='
++ cat smoke-out/logcat-run1-crash.txt
++ echo
++ echo '===== logcat filtered ====='
++ head -300 smoke-out/logcat-run1-filtered.txt
++ exit 0

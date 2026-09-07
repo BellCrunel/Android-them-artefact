@@ -1,0 +1,21 @@
+Artefact Launcher — звіт про запуск
+Час: 2026-09-07 17:31:41
+Android: 14 (API 34)
+Пристрій: Google sdk_gphone64_x86_64
+
+[17:31:41.178] старт процесу
+[17:31:41.180] AppContainer: створення
+[17:31:41.185] AppRepository ok
+[17:31:41.226] LayoutRepository ok
+[17:31:41.233] SettingsRepository ok
+[17:31:41.254] ThemeRepository ok
+[17:31:41.259] WeatherRepository ok
+[17:31:41.261] WallpaperRepository ok
+[17:31:41.263] IconLoader ok
+[17:31:41.265] AppContainer: готово
+[17:31:41.285] MainActivity.onCreate
+[17:31:41.290] WidgetController ok
+[17:31:41.301] edgeToEdge ok
+[17:31:41.302] ViewModel: створення
+[17:31:41.339] ViewModel: готово, викликаю setContent
+[17:31:42.382] READY
