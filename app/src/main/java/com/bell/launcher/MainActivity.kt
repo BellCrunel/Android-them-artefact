@@ -37,7 +37,13 @@ class MainActivity : ComponentActivity() {
         LauncherViewModel.Factory((application as LauncherApp).container)
     }
 
-    private val widgetController = WidgetController(this)
+    /**
+     * УВАГА: створювати тільки в onCreate, а не в полі класу.
+     * У конструкторі активності базовий контекст ще не підключений (attachBaseContext
+     * не викликано), а AppWidgetHost одразу звертається до context.getMainLooper()
+     * і падає з NullPointerException — активність не інстанціюється взагалі.
+     */
+    private lateinit var widgetController: WidgetController
 
     private var crashMode = false
 
@@ -67,6 +73,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         CrashLog.step(this, "MainActivity.onCreate")
+
+        widgetController = WidgetController(this)
+        CrashLog.step(this, "WidgetController ok")
 
         // На деяких прошивках це може кинути виняток — лаунчеру важливіше запуститися.
         runCatching {
@@ -141,7 +150,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (!crashMode) widgetController.startListening()
+        if (!crashMode && ::widgetController.isInitialized) widgetController.startListening()
     }
 
     override fun onResume() {
@@ -150,7 +159,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onStop() {
-        if (!crashMode) widgetController.stopListening()
+        if (!crashMode && ::widgetController.isInitialized) widgetController.stopListening()
         super.onStop()
     }
 

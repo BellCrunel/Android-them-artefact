@@ -1,0 +1,28 @@
+--------- beginning of crash
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: FATAL EXCEPTION: main
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: Process: com.bell.launcher.debug, PID: 2448
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: java.lang.RuntimeException: Unable to instantiate activity ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}: java.lang.NullPointerException: Attempt to invoke virtual method 'android.os.Looper android.content.Context.getMainLooper()' on a null object reference
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3689)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3922)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:103)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:139)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:96)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2443)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:205)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:294)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: Caused by: java.lang.NullPointerException: Attempt to invoke virtual method 'android.os.Looper android.content.Context.getMainLooper()' on a null object reference
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.content.ContextWrapper.getMainLooper(ContextWrapper.java:140)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.appwidget.AppWidgetHost.<init>(AppWidgetHost.java:171)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at com.bell.launcher.ui.widget.WidgetController.<init>(WidgetController.kt:26)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at com.bell.launcher.MainActivity.<init>(MainActivity.kt:40)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at java.lang.Class.newInstance(Native Method)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.AppComponentFactory.instantiateActivity(AppComponentFactory.java:95)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at androidx.core.app.CoreComponentFactory.instantiateActivity(CoreComponentFactory.java:44)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.Instrumentation.newActivity(Instrumentation.java:1378)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3676)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	... 12 more

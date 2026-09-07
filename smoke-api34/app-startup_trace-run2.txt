@@ -1,0 +1,14 @@
+Bell Launcher — звіт про запуск
+Час: 2026-09-07 09:24:17
+Android: 14 (API 34)
+Пристрій: Google sdk_gphone64_x86_64
+
+[09:24:17.514] старт процесу
+[09:24:17.517] AppContainer: створення
+[09:24:17.524] AppRepository ok
+[09:24:17.586] LayoutRepository ok
+[09:24:17.596] SettingsRepository ok
+[09:24:17.644] ThemeRepository ok
+[09:24:17.650] WeatherRepository ok
+[09:24:17.652] IconLoader ok
+[09:24:17.666] AppContainer: готово

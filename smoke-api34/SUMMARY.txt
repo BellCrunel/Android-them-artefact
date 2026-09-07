@@ -1,0 +1,179 @@
+===== ANDROID =====
+14
+34
+
+===== app-last_crash.txt =====
+Bell Launcher — звіт про запуск
+Час: 2026-09-07 09:23:53
+Android: 14 (API 34)
+Пристрій: Google sdk_gphone64_x86_64
+
+Потік: main
+
+---- ВИНЯТОК ----
+java.lang.RuntimeException: Unable to instantiate activity ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}: java.lang.NullPointerException: Attempt to invoke virtual method 'android.os.Looper android.content.Context.getMainLooper()' on a null object reference
+	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3689)
+	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3922)
+	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:103)
+	at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:139)
+	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:96)
+	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2443)
+	at android.os.Handler.dispatchMessage(Handler.java:106)
+	at android.os.Looper.loopOnce(Looper.java:205)
+	at android.os.Looper.loop(Looper.java:294)
+	at android.app.ActivityThread.main(ActivityThread.java:8177)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+Caused by: java.lang.NullPointerException: Attempt to invoke virtual method 'android.os.Looper android.content.Context.getMainLooper()' on a null object reference
+	at android.content.ContextWrapper.getMainLooper(ContextWrapper.java:140)
+	at android.appwidget.AppWidgetHost.<init>(AppWidgetHost.java:171)
+	at com.bell.launcher.ui.widget.WidgetController.<init>(WidgetController.kt:26)
+	at com.bell.launcher.MainActivity.<init>(MainActivity.kt:40)
+	at java.lang.Class.newInstance(Native Method)
+	at android.app.AppComponentFactory.instantiateActivity(AppComponentFactory.java:95)
+	at androidx.core.app.CoreComponentFactory.instantiateActivity(CoreComponentFactory.java:44)
+	at android.app.Instrumentation.newActivity(Instrumentation.java:1378)
+	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3676)
+	... 12 more
+
+---- ЕТАПИ ЗАПУСКУ ----
+Bell Launcher — звіт про запуск
+Час: 2026-09-07 09:23:52
+Android: 14 (API 34)
+Пристрій: Google sdk_gphone64_x86_64
+
+[09:23:52.424] старт процесу
+[09:23:52.427] AppContainer: створення
+[09:23:52.432] AppRepository ok
+[09:23:52.496] LayoutRepository ok
+[09:23:52.652] SettingsRepository ok
+[09:23:52.776] ThemeRepository ok
+[09:23:52.840] WeatherRepository ok
+[09:23:52.842] IconLoader ok
+[09:23:52.843] AppContainer: готово
+
+
+===== app-startup_trace.txt =====
+Bell Launcher — звіт про запуск
+Час: 2026-09-07 09:23:52
+Android: 14 (API 34)
+Пристрій: Google sdk_gphone64_x86_64
+
+[09:23:52.424] старт процесу
+[09:23:52.427] AppContainer: створення
+[09:23:52.432] AppRepository ok
+[09:23:52.496] LayoutRepository ok
+[09:23:52.652] SettingsRepository ok
+[09:23:52.776] ThemeRepository ok
+[09:23:52.840] WeatherRepository ok
+[09:23:52.842] IconLoader ok
+[09:23:52.843] AppContainer: готово
+
+===== logcat crash buffer =====
+--------- beginning of crash
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: FATAL EXCEPTION: main
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: Process: com.bell.launcher.debug, PID: 2448
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: java.lang.RuntimeException: Unable to instantiate activity ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}: java.lang.NullPointerException: Attempt to invoke virtual method 'android.os.Looper android.content.Context.getMainLooper()' on a null object reference
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3689)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3922)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:103)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:139)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:96)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2443)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:205)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:294)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: Caused by: java.lang.NullPointerException: Attempt to invoke virtual method 'android.os.Looper android.content.Context.getMainLooper()' on a null object reference
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.content.ContextWrapper.getMainLooper(ContextWrapper.java:140)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.appwidget.AppWidgetHost.<init>(AppWidgetHost.java:171)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at com.bell.launcher.ui.widget.WidgetController.<init>(WidgetController.kt:26)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at com.bell.launcher.MainActivity.<init>(MainActivity.kt:40)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at java.lang.Class.newInstance(Native Method)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.AppComponentFactory.instantiateActivity(AppComponentFactory.java:95)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at androidx.core.app.CoreComponentFactory.instantiateActivity(CoreComponentFactory.java:44)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.Instrumentation.newActivity(Instrumentation.java:1378)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3676)
+09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	... 12 more
+
+===== logcat filtered =====
+125:09-07 09:23:51.058   835  2361 E BackupHelper: Caused by: android.system.ErrnoException: open failed: ENOENT (No such file or directory)
+193:09-07 09:23:51.148   518  1949 V SplashScreenExceptionList: SplashScreen checking exception for package com.bell.launcher.debug (target sdk:35) -> false
+202:09-07 09:23:51.158   518  1949 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.bell.launcher.debug/com.bell.launcher.MainActivity} with LAUNCH_SINGLE_TASK from uid 2000 (BAL_ALLOW_PERMISSION) result code=0
+205:09-07 09:23:51.165   518  1956 D CoreBackPreview: Window{9abee45 u0 Splash Screen com.bell.launcher.debug}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@a6052cb, mPriority=0, mIsAnimationCallback=false}
+333:09-07 09:23:51.296   518   548 I ActivityManager: Start proc 2448:com.bell.launcher.debug/u0a192 for next-top-activity {com.bell.launcher.debug/com.bell.launcher.MainActivity}
+488:09-07 09:23:51.487  2448  2448 W ziparchive: Unable to open '/data/app/~~LLeNHDsWDPtUM1dWlxoG9A==/com.bell.launcher.debug-PNSZG8MbFVaYIuFRg_iV4Q==/base.dm': No such file or directory
+489:09-07 09:23:51.487  2448  2448 W ziparchive: Unable to open '/data/app/~~LLeNHDsWDPtUM1dWlxoG9A==/com.bell.launcher.debug-PNSZG8MbFVaYIuFRg_iV4Q==/base.dm': No such file or directory
+492:09-07 09:23:51.496   518   802 I SdkSandboxManager: No SDKs used. Skipping SDK data reconcilation for CallingInfo{mUid=10192, mPackageName='com.bell.launcher.debug, mAppProcessToken='null'}
+594:09-07 09:23:51.679   518   537 V WindowManager:     info={id=5 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{RemoteToken{10af404 Task{b11d990 #8 type=standard A=10192:com.bell.launcher.debug}}} m=OPEN f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=8)/@0xd3b7ec3 sb=Rect(0, 0 - 320, 640) eb=Rect(0, 0 - 320, 640) d=0},{WCT{RemoteToken{71b4ded Task{e34e0d4 #1 type=home}}} m=TO_BACK f=NONE leash=Surface(name=Task=1)/@0xa725474 sb=Rect(0, 0 - 320, 640) eb=Rect(0, 0 - 320, 640) d=0},{null m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{d95fd37 token=android.os.Binder@6d50a36})/@0x738aa72 sb=Rect(0, 0 - 320, 640) eb=Rect(0, 0 - 320, 640) d=0}]}
+888:09-07 09:23:52.283  2238  2238 I ResolverListAdapter: Add DisplayResolveInfo component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}, intent component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}
+920:09-07 09:23:52.356   835   835 I SafetyLabelChangedBroadcastReceiver: received broadcast packageName: com.bell.launcher.debug, current user: UserHandle{0}, packageChangeEvent: NEW_INSTALL, intent user: UserHandle{0}
+932:09-07 09:23:52.377  2448  2448 D nativeloader: Configuring clns-6 for other apk /data/app/~~LLeNHDsWDPtUM1dWlxoG9A==/com.bell.launcher.debug-PNSZG8MbFVaYIuFRg_iV4Q==/base.apk. target_sdk_version=35, uses_libraries=, library_path=/data/app/~~LLeNHDsWDPtUM1dWlxoG9A==/com.bell.launcher.debug-PNSZG8MbFVaYIuFRg_iV4Q==/lib/x86_64:/data/app/~~LLeNHDsWDPtUM1dWlxoG9A==/com.bell.launcher.debug-PNSZG8MbFVaYIuFRg_iV4Q==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.bell.launcher.debug
+941:09-07 09:23:52.384  2448  2448 V GraphicsEnvironment: ANGLE GameManagerService for com.bell.launcher.debug: false
+942:09-07 09:23:52.384  2448  2448 V GraphicsEnvironment: com.bell.launcher.debug is not listed in per-application setting
+1059:09-07 09:23:52.634  1053  1053 D CarrierSvcBindHelper: onPackageAdded: com.bell.launcher.debug
+1061:09-07 09:23:52.637  1053  1397 D ImsResolver: maybeAddedImsService, packageName: com.bell.launcher.debug
+1077:09-07 09:23:52.702  1053  1053 D CarrierSvcBindHelper: onPackageModified: com.bell.launcher.debug
+1080:09-07 09:23:52.722  1053  1397 D ImsResolver: maybeAddedImsService, packageName: com.bell.launcher.debug
+1158:09-07 09:23:52.993  2448  2448 D AndroidRuntime: Shutting down VM
+1164:09-07 09:23:53.009  2448  2448 E AndroidRuntime: FATAL EXCEPTION: main
+1165:09-07 09:23:53.009  2448  2448 E AndroidRuntime: Process: com.bell.launcher.debug, PID: 2448
+1166:09-07 09:23:53.009  2448  2448 E AndroidRuntime: java.lang.RuntimeException: Unable to instantiate activity ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}: java.lang.NullPointerException: Attempt to invoke virtual method 'android.os.Looper android.content.Context.getMainLooper()' on a null object reference
+1167:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3689)
+1168:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3922)
+1169:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:103)
+1170:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:139)
+1171:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:96)
+1172:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2443)
+1173:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+1174:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:205)
+1175:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:294)
+1176:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+1177:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+1178:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+1179:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+1180:09-07 09:23:53.009  2448  2448 E AndroidRuntime: Caused by: java.lang.NullPointerException: Attempt to invoke virtual method 'android.os.Looper android.content.Context.getMainLooper()' on a null object reference
+1181:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.content.ContextWrapper.getMainLooper(ContextWrapper.java:140)
+1182:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.appwidget.AppWidgetHost.<init>(AppWidgetHost.java:171)
+1183:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at com.bell.launcher.ui.widget.WidgetController.<init>(WidgetController.kt:26)
+1184:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at com.bell.launcher.MainActivity.<init>(MainActivity.kt:40)
+1185:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at java.lang.Class.newInstance(Native Method)
+1186:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.AppComponentFactory.instantiateActivity(AppComponentFactory.java:95)
+1187:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at androidx.core.app.CoreComponentFactory.instantiateActivity(CoreComponentFactory.java:44)
+1188:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.Instrumentation.newActivity(Instrumentation.java:1378)
+1189:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3676)
+1190:09-07 09:23:53.009  2448  2448 E AndroidRuntime: 	... 12 more
+1240:09-07 09:23:53.221   518  1958 W ActivityTaskManager:   Force finishing activity com.bell.launcher.debug/com.bell.launcher.MainActivity
+1272:09-07 09:23:53.318   518  1958 I ActivityManager: Process com.bell.launcher.debug (pid 2448) has died: fg  TOP 
+1280:09-07 09:23:53.388  2238  2238 I ResolverListAdapter: Add DisplayResolveInfo component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}, intent component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}
+1356:09-07 09:23:53.595   518   537 V WindowManager:     info={id=6 t=CLOSE f=0x10 trk=0 r=[0@Point(0, 0)] c=[{WCT{RemoteToken{ea5894e Task{60e13cb #7 type=standard I=android/com.android.internal.app.ResolverActivity}}} m=TO_FRONT f=TRANSLUCENT|MOVE_TO_TOP leash=Surface(name=Task=7)/@0x55a04aa sb=Rect(0, 0 - 320, 640) eb=Rect(0, 0 - 320, 640) d=0},{WCT{RemoteToken{10af404 Task{b11d990 #8 type=standard A=10192:com.bell.launcher.debug}}} m=CLOSE f=SHOW_WALLPAPER leash=Surface(name=Task=8)/@0xd3b7ec3 sb=Rect(0, 0 - 320, 640) eb=Rect(0, 0 - 320, 640) d=0}]}
+1376:09-07 09:23:53.633   518  1000 W InputManager-JNI: Input channel object '9abee45 Splash Screen com.bell.launcher.debug (client)' was disposed without first being removed with the input manager!
+1449:09-07 09:23:53.726   518   540 W ActivityTaskManager: Activity top resumed state loss timeout for ActivityRecord{649ac53 u0 com.bell.launcher.debug/com.bell.launcher.MainActivity t-1 f}}
+2103:09-07 09:23:54.237  1750  2408 E AwarenessRouterSyncMgr: Caused by: java.lang.IllegalStateException: Account associated with identity was null
+2525:09-07 09:23:55.544  1665  2257 W SnapshotHandler: Caused by: android.system.ErrnoException: open failed: ENOENT (No such file or directory)
+2773:09-07 09:23:56.010  2238  2238 I ResolverListAdapter: Add DisplayResolveInfo component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}, intent component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}
+3017:09-07 09:23:56.537  2751  2975 I VoiceDataManager: Caused by: java.util.concurrent.CancellationException: Task was cancelled.
+3228:09-07 09:23:57.060  1665  1970 W SnapshotHandler: Caused by: android.system.ErrnoException: open failed: ENOENT (No such file or directory)
+3415:09-07 09:23:57.464  1778  2219 W SnapshotHandler: Caused by: android.system.ErrnoException: open failed: ENOENT (No such file or directory)
+4087:09-07 09:23:58.782  1661  1661 I AiAiEcho: AppFetcherImplV2 updateApps package:[com.bell.launcher.debug], userId:[0], reason:[package is added.].
+4243:09-07 09:23:59.040  1661  1661 I AiAiEcho: AppFetcherImpl onPackageChanged com.bell.launcher.debug.
+4746:09-07 09:23:59.500  1661  2599 I AiAiEcho: AppIndexer Package:[com.bell.launcher.debug] UserProfile:[0] Enabled:[true].
+4747:09-07 09:23:59.500  1661  2599 I AiAiEcho: AppFetcherImplV2 updateApps package:[com.bell.launcher.debug], userId:[0], reason:[package is updated.].
+5028:09-07 09:23:59.750  1419  1419 E GmsCoreLogger: Caused by: java.util.concurrent.TimeoutException
+5889:09-07 09:24:01.250  2238  2238 I ResolverListAdapter: Add DisplayResolveInfo component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}, intent component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}
+6090:09-07 09:24:01.587  2238  2238 I ResolverListAdapter: Add DisplayResolveInfo component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}, intent component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}
+6306:09-07 09:24:01.950  2238  2238 I ResolverListAdapter: Add DisplayResolveInfo component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}, intent component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}
+8107:09-07 09:24:05.217  2238  2238 I ResolverListAdapter: Add DisplayResolveInfo component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}, intent component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}
+8441:09-07 09:24:06.178  2238  2238 I ResolverListAdapter: Add DisplayResolveInfo component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}, intent component: ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}
+8986:09-07 09:24:06.932  1778  1778 W SnapshotHandler: Caused by: android.system.ErrnoException: open failed: ENOENT (No such file or directory)
+9030:09-07 09:24:06.943  1778  2195 W SnapshotHandler: Caused by: android.system.ErrnoException: open failed: ENOENT (No such file or directory)
+11022:09-07 09:24:09.696  1475  2258 I BlockstoreStorage: Clearing Blockstore Data for package com.bell.launcher.debug [CONTEXT service_id=258 ]
+11056:09-07 09:24:09.800  1419  3872 I FontLog : Package com.bell.launcher.debug has no metadata [CONTEXT service_id=132 ]
+16020:09-07 09:24:12.360  1778  1778 E A       : Caused by: com.google.android.apps.gsa.shared.speech.a.o: errorCode: 65586, engine: 2
+16022:09-07 09:24:12.360  1778  1778 E A       : Caused by: com.google.android.apps.gsa.shared.speech.a.k: errorCode: 401, engine: 2
+16208:09-07 09:24:13.274  1419  2982 I SemanticLocation: Caused by: android.system.ErrnoException: open failed: ENOENT (No such file or directory)
+16250:09-07 09:24:13.336  1419  2982 I SemanticLocation: Caused by: android.system.ErrnoException: open failed: ENOENT (No such file or directory)

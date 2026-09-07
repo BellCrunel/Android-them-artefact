@@ -1,0 +1,50 @@
+Bell Launcher — звіт про запуск
+Час: 2026-09-07 09:23:53
+Android: 14 (API 34)
+Пристрій: Google sdk_gphone64_x86_64
+
+Потік: main
+
+---- ВИНЯТОК ----
+java.lang.RuntimeException: Unable to instantiate activity ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity}: java.lang.NullPointerException: Attempt to invoke virtual method 'android.os.Looper android.content.Context.getMainLooper()' on a null object reference
+	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3689)
+	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3922)
+	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:103)
+	at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:139)
+	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:96)
+	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2443)
+	at android.os.Handler.dispatchMessage(Handler.java:106)
+	at android.os.Looper.loopOnce(Looper.java:205)
+	at android.os.Looper.loop(Looper.java:294)
+	at android.app.ActivityThread.main(ActivityThread.java:8177)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+Caused by: java.lang.NullPointerException: Attempt to invoke virtual method 'android.os.Looper android.content.Context.getMainLooper()' on a null object reference
+	at android.content.ContextWrapper.getMainLooper(ContextWrapper.java:140)
+	at android.appwidget.AppWidgetHost.<init>(AppWidgetHost.java:171)
+	at com.bell.launcher.ui.widget.WidgetController.<init>(WidgetController.kt:26)
+	at com.bell.launcher.MainActivity.<init>(MainActivity.kt:40)
+	at java.lang.Class.newInstance(Native Method)
+	at android.app.AppComponentFactory.instantiateActivity(AppComponentFactory.java:95)
+	at androidx.core.app.CoreComponentFactory.instantiateActivity(CoreComponentFactory.java:44)
+	at android.app.Instrumentation.newActivity(Instrumentation.java:1378)
+	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3676)
+	... 12 more
+
+---- ЕТАПИ ЗАПУСКУ ----
+Bell Launcher — звіт про запуск
+Час: 2026-09-07 09:23:52
+Android: 14 (API 34)
+Пристрій: Google sdk_gphone64_x86_64
+
+[09:23:52.424] старт процесу
+[09:23:52.427] AppContainer: створення
+[09:23:52.432] AppRepository ok
+[09:23:52.496] LayoutRepository ok
+[09:23:52.652] SettingsRepository ok
+[09:23:52.776] ThemeRepository ok
+[09:23:52.840] WeatherRepository ok
+[09:23:52.842] IconLoader ok
+[09:23:52.843] AppContainer: готово
+
