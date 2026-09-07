@@ -15,11 +15,15 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import com.bell.launcher.theme.model.IconShape
 import com.bell.launcher.theme.model.IconSpec
-import kotlin.math.min
 
 /**
  * Приводить будь-яку іконку до вигляду, заданого темою:
  * форма, підкладка, масштаб, монохромний відтінок.
+ *
+ * ВАЖЛИВО щодо порядку: тінт накладається **лише на саму іконку**, до того
+ * як вона лягає на підкладку. Якщо тінтувати готову картинку разом із
+ * підкладкою, SRC_IN зафарбує все непрозоре одним кольором — вийде суцільна
+ * плитка без малюнка (саме такий баг і був).
  */
 object IconRenderer {
 
@@ -28,69 +32,79 @@ object IconRenderer {
         val out = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(out)
 
-        if (spec.shape == IconShape.ORIGINAL) {
-            drawScaled(canvas, drawable, size, 1f)
-            return applyTint(out, spec)
-        }
-
-        val path = shapePath(spec, size.toFloat())
-
-        // Підкладка
+        val tint = parseColorInt(spec.tint, 0)
         val bg = parseColorInt(spec.background, 0)
+        val shaped = spec.shape != IconShape.ORIGINAL
+
+        // 1. Підкладка (якщо задана)
+        val path: Path? = if (shaped) shapePath(spec, size.toFloat()) else null
         if (bg != 0) {
             val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bg }
-            canvas.drawPath(path, paint)
+            if (path != null) {
+                canvas.drawPath(path, paint)
+            } else {
+                canvas.drawRect(0f, 0f, size.toFloat(), size.toFloat(), paint)
+            }
         }
 
-        // Малюємо саму іконку в окремий шар і обрізаємо по формі
+        // 2. Сама іконка в окремий шар, одразу з тінтом
         val layer = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val layerCanvas = Canvas(layer)
-        val content = unwrap(drawable)
-        val scale = if (isAdaptive(drawable)) 1f else spec.scale.coerceIn(0.4f, 1f)
-        drawScaled(layerCanvas, content, size, scale)
-
-        val mask = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        Canvas(mask).drawPath(path, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK })
-
-        val maskPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+        // Адаптивні іконки вже розраховані під маску — їх не зменшуємо
+        val scale = if (drawable is AdaptiveIconDrawable && shaped) {
+            1f
+        } else {
+            spec.scale.coerceIn(0.3f, 1f)
         }
-        layerCanvas.drawBitmap(mask, 0f, 0f, maskPaint)
+        drawScaled(layerCanvas, drawable, size, scale, tint)
+
+        // 3. Обрізаємо іконку по формі
+        if (path != null) {
+            val mask = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            Canvas(mask).drawPath(path, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK })
+            layerCanvas.drawBitmap(
+                mask,
+                0f,
+                0f,
+                Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+                },
+            )
+            mask.recycle()
+        }
+
+        // 4. Накладаємо на підкладку
         canvas.drawBitmap(layer, 0f, 0f, null)
-
         layer.recycle()
-        mask.recycle()
-        return applyTint(out, spec)
-    }
 
-    private fun applyTint(bitmap: Bitmap, spec: IconSpec): Bitmap {
-        val tint = parseColorInt(spec.tint, 0)
-        if (tint == 0) return bitmap
-        val out = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            colorFilter = PorterDuffColorFilter(tint, PorterDuff.Mode.SRC_IN)
-        }
-        Canvas(out).drawBitmap(bitmap, 0f, 0f, paint)
-        bitmap.recycle()
         return out
     }
 
-    private fun isAdaptive(drawable: Drawable): Boolean = drawable is AdaptiveIconDrawable
-
-    /** Для адаптивних іконок беремо фон+передній план цілком (вони вже розраховані під маску). */
-    private fun unwrap(drawable: Drawable): Drawable = drawable
-
-    private fun drawScaled(canvas: Canvas, drawable: Drawable, size: Int, scale: Float) {
+    private fun drawScaled(
+        canvas: Canvas,
+        drawable: Drawable,
+        size: Int,
+        scale: Float,
+        tint: Int,
+    ) {
         val inset = ((1f - scale) * size / 2f).toInt()
         val bounds = Rect(inset, inset, size - inset, size - inset)
+        val filter = if (tint != 0) PorterDuffColorFilter(tint, PorterDuff.Mode.SRC_IN) else null
+
         if (drawable is BitmapDrawable && drawable.bitmap != null) {
-            canvas.drawBitmap(drawable.bitmap, null, bounds, Paint(Paint.FILTER_BITMAP_FLAG))
-        } else {
-            val old = Rect(drawable.bounds)
-            drawable.bounds = bounds
-            drawable.draw(canvas)
-            drawable.bounds = old
+            val paint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG)
+            paint.colorFilter = filter
+            canvas.drawBitmap(drawable.bitmap, null, bounds, paint)
+            return
         }
+
+        val previousFilter = drawable.colorFilter
+        val previousBounds = Rect(drawable.bounds)
+        if (filter != null) drawable.colorFilter = filter
+        drawable.bounds = bounds
+        drawable.draw(canvas)
+        drawable.bounds = previousBounds
+        drawable.colorFilter = previousFilter
     }
 
     fun shapePath(spec: IconSpec, size: Float): Path {
@@ -105,7 +119,11 @@ object IconRenderer {
             }
             IconShape.TEARDROP -> {
                 val r = size / 2f
-                path.addRoundRect(rect, floatArrayOf(r, r, r, r, r, r, size * 0.12f, size * 0.12f), Path.Direction.CW)
+                path.addRoundRect(
+                    rect,
+                    floatArrayOf(r, r, r, r, r, r, size * 0.12f, size * 0.12f),
+                    Path.Direction.CW,
+                )
             }
             IconShape.HEXAGON -> {
                 val cx = size / 2f
@@ -129,7 +147,7 @@ object IconRenderer {
     private fun squircle(path: Path, size: Float) {
         val s = size
         val c = s * 0.5f
-        val k = s * 0.28f // «сила» заокруглення
+        val k = s * 0.28f
         path.moveTo(c, 0f)
         path.cubicTo(c + k, 0f, s, c - k, s, c)
         path.cubicTo(s, c + k, c + k, s, c, s)
@@ -137,7 +155,4 @@ object IconRenderer {
         path.cubicTo(0f, c - k, c - k, 0f, c, 0f)
         path.close()
     }
-
-    fun sizeOf(drawable: Drawable, fallback: Int): Int =
-        min(fallback, maxOf(drawable.intrinsicWidth, drawable.intrinsicHeight).takeIf { it > 0 } ?: fallback)
 }

@@ -9,17 +9,33 @@ import androidx.compose.ui.input.pointer.positionChange
 import kotlin.math.abs
 
 /**
- * Спостерігач жестів, який НЕ споживає події — тому пейджер, іконки та віджети
+ * Спостерігач жестів, який НЕ споживає події — тому список, іконки та віджети
  * продовжують працювати як завжди.
+ *
+ * [excludeRightPx] — смуга вздовж правого краю, де жести лаунчера ігноруються.
+ * Там живе алфавітний покажчик: без цієї зони протягування по літерах угору
+ * відкривало б пошук, а вниз — шторку сповіщень.
  */
 fun Modifier.launcherGestures(
     onSwipeUp: () -> Unit,
     onSwipeDown: () -> Unit,
     onTwoFingerSwipeDown: () -> Unit,
-): Modifier = this.pointerInput(onSwipeUp, onSwipeDown, onTwoFingerSwipeDown) {
+    excludeRightPx: Float = 0f,
+): Modifier = this.pointerInput(onSwipeUp, onSwipeDown, onTwoFingerSwipeDown, excludeRightPx) {
     val threshold = viewConfiguration.touchSlop * 3.5f
+
     awaitEachGesture {
         val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+
+        // Дотик почався в зоні алфавіту — цей жест не наш
+        if (excludeRightPx > 0f && down.position.x > size.width - excludeRightPx) {
+            while (true) {
+                val event = awaitPointerEvent(PointerEventPass.Initial)
+                if (event.changes.none { it.pressed }) break
+            }
+            return@awaitEachGesture
+        }
+
         var totalX = 0f
         var totalY = 0f
         var maxPointers = 1

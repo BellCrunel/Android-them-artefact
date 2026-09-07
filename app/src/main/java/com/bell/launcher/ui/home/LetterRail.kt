@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -34,7 +35,10 @@ import kotlin.math.exp
 import kotlin.math.roundToInt
 
 private val ITEM_HEIGHT = 21.dp
-private val RAIL_WIDTH = 44.dp
+
+/** Ширина зони дотику — під великий палець, а не під олівець. */
+val RAIL_WIDTH = 68.dp
+
 private val BUBBLE_SIZE = 46.dp
 
 /**
@@ -121,8 +125,12 @@ fun LetterRail(
                 val isActive = letter == active && dragging
 
                 Box(
-                    Modifier.height(ITEM_HEIGHT).fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
+                    Modifier
+                        .height(ITEM_HEIGHT)
+                        .fillMaxWidth()
+                        .padding(end = 12.dp),
+                    // Літери притиснуті до правого краю, а зона дотику широка
+                    contentAlignment = Alignment.CenterEnd,
                 ) {
                     // До дотику алфавіт майже прозорий, під час протягування — проявляється
                     val alpha = if (isActive) {

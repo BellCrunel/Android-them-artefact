@@ -55,7 +55,6 @@
     "cornerRadiusPercent": 30,
     "scale": 0.62,
     "background": "#1E1E28",
-    "tint": "#E6E6EE",
     "normalizeLegacyIcons": true
   },
 

@@ -174,7 +174,7 @@ private fun FavoritesList(
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize().systemBarsPadding(),
-        contentPadding = PaddingValues(end = 44.dp),
+        contentPadding = PaddingValues(end = 62.dp),
         // Головний екран не скролиться: інакше свайп угору (перед відкриттям пошуку)
         // піднімав би годинник у самий верх. Довгі списки — це вже алфавіт.
         userScrollEnabled = false,
@@ -262,7 +262,7 @@ private fun LetterList(
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize().systemBarsPadding(),
-            contentPadding = PaddingValues(top = 96.dp, bottom = 80.dp, end = 44.dp),
+            contentPadding = PaddingValues(top = 96.dp, bottom = 80.dp, end = 62.dp),
         ) {
             item(key = "__letter__") {
                 Text(

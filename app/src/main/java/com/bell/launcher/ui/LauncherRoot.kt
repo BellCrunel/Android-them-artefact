@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.bell.launcher.data.BackgroundMode
 import com.bell.launcher.data.GestureAction
@@ -66,6 +67,7 @@ import com.bell.launcher.ui.folder.RenameDialog
 import com.bell.launcher.ui.gestures.launcherGestures
 import com.bell.launcher.ui.home.HomeRowAction
 import com.bell.launcher.ui.home.HomeScreen
+import com.bell.launcher.ui.home.RAIL_WIDTH
 import com.bell.launcher.ui.settings.FavoritesScreen
 import com.bell.launcher.ui.settings.HiddenAppsScreen
 import com.bell.launcher.ui.settings.SettingsScreen
@@ -103,6 +105,7 @@ fun LauncherRoot(
 
     val folders = state.layout.sorted.filterIsInstance<FolderEntry>()
     val iconPacks = remember { viewModel.installedIconPacks() }
+    val railWidthPx = with(LocalDensity.current) { RAIL_WIDTH.toPx() }
 
     fun launch(ref: AppRef) {
         viewModel.appRepository.launch(ref.packageName, ref.activityName)
@@ -184,6 +187,8 @@ fun LauncherRoot(
                     onTwoFingerSwipeDown = {
                         if (overlay == Overlay.NONE) runAction(state.settings.twoFingerSwipeDown)
                     },
+                    // Смуга алфавіту справа: там жести лаунчера мовчать
+                    excludeRightPx = railWidthPx,
                 ),
             )
 
