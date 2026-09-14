@@ -55,6 +55,23 @@ jobs:
           echo "$KEYSTORE_BASE64" | base64 -d > artefact-release.jks
           ls -l artefact-release.jks
 
+      - name: Check the password actually opens the keystore
+        env:
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          # Перевіряємо ДО збірки: інакше помилка пароля вилазить аж через
+          # дві з половиною хвилини, та ще й стеком BadPaddingException.
+          if ! keytool -list -keystore artefact-release.jks \
+                -storepass "$STORE_PASSWORD" >/dev/null 2>&1; then
+            echo "::error::Секрет KEYSTORE_PASSWORD не відкриває artefact-release.jks."
+            echo "Перевірте локально:  keytool -list -keystore artefact-release.jks"
+            echo "Той пароль, який спрацює там, і має лежати в секреті."
+            exit 1
+          fi
+          echo "Пароль сховища підходить. Псевдоніми всередині:"
+          keytool -list -keystore artefact-release.jks -storepass "$STORE_PASSWORD" \
+            | grep -i "PrivateKeyEntry" || true
+
       - name: Write keystore.properties
         env:
           STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
