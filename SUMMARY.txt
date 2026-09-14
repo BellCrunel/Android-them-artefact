@@ -1,0 +1,333 @@
+===== ANDROID =====
+16
+36
+
+===== app-last_crash.txt =====
+
+===== app-startup_trace.txt =====
+Artefact Launcher — звіт про запуск
+Час: 2026-09-14 13:52:05
+Android: 16 (API 36)
+Пристрій: Google sdk_gphone64_x86_64
+
+[13:52:05.095] старт процесу
+[13:52:05.097] AppContainer: створення
+[13:52:05.102] AppRepository ok
+[13:52:05.129] LayoutRepository ok
+[13:52:05.144] SettingsRepository ok
+[13:52:05.192] ThemeRepository ok
+[13:52:05.201] WeatherRepository ok
+[13:52:05.203] WallpaperRepository ok
+[13:52:05.212] UsageCounter ok
+[13:52:05.216] IconLoader ok
+[13:52:05.219] AppContainer: готово
+[13:52:05.526] MainActivity.onCreate
+[13:52:05.536] WidgetController ok
+[13:52:05.574] edgeToEdge ok
+[13:52:05.575] ViewModel: створення
+[13:52:05.638] ViewModel: готово, викликаю setContent
+[13:52:07.160] READY
+
+===== logcat crash buffer =====
+
+===== logcat filtered =====
+343:09-14 13:52:03.951   651  1194 V SplashScreenExceptionList: SplashScreen checking exception for package com.bell.launcher.debug (target sdk:35) -> false
+359:09-14 13:52:03.976   651  1194 I ActivityTaskManager: START u0 {flg=0x10000000 xflg=0x5 cmp=com.bell.launcher.debug/com.bell.launcher.MainActivity} with LAUNCH_SINGLE_TASK from uid 2000 (BAL_ALLOW_PERMISSION) result code=0
+360:09-14 13:52:03.977  1018  1087 V WindowManagerShell: Transition requested (#7): android.os.BinderProxy@50d6a9d TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=7 effectiveUid=10216 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.bell.launcher.debug/com.bell.launcher.MainActivity } baseActivity=ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity} topActivity=ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity} origActivity=null realActivity=ComponentInfo{com.bell.launcher.debug/com.bell.launcher.MainActivity} numActivities=1 lastActiveTime=55633 supportsMultiWindow=true resizeMode=2 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@fa06b12} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 0 - 0, 0) topActivityInfo=ActivityInfo{9d942e3 com.bell.launcher.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isTopActivityNoDisplay=false isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false isActivityStackTransparent=false lastNonFullscreenBounds=Rect(74, 160 - 246, 480) capturedLink=null capturedLinkTimestamp=0 requestedVisibleTypes=-9 topActivityRequestOpenInBrowserEducationTimestamp=0 appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false eligibleForLetterboxEducation= false isLetterboxEducationEnabled= true isLetterboxDoubleTapEnabled= false eligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 topActivityAppBounds=Rect(0, 0 - 320, 640) isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false hasMinAspectRatioOverride=false topActivityLetterboxBounds=null cameraCompatTaskInfo=CameraCompatTaskInfo { freeformCameraCompatMode=inactive}} topActivityMainWindowFrame=null}, pipChange = null, remoteTransition = null, displayChange = null, flags = 0, debugId = 7 }
+366:09-14 13:52:04.005   651   738 I AppsFilter: interaction: PackageSetting{c995659 com.android.microdroid.empty_payload/10192} -> PackageSetting{3040aff com.bell.launcher.debug/10216} BLOCKED
+480:09-14 13:52:04.198   651   685 I ActivityManager: Start proc 2233:com.bell.launcher.debug/u0a216 for next-top-activity {com.bell.launcher.debug/com.bell.launcher.MainActivity}
+501:09-14 13:52:04.228  1193  1439 I SatelliteAppTracker: onPackageAdded : com.bell.launcher.debug
+949:09-14 13:52:04.886  1193  1193 D CarrierSvcBindHelper: onPackageAdded: com.bell.launcher.debug
+978:09-14 13:52:04.956  2233  2233 D nativeloader: Configuring clns-9 for other apk /data/app/~~XfjYXN--O1AXfVeYLUykUw==/com.bell.launcher.debug-bzMiIj9vxaIlMxJ0bKqh5A==/base.apk. target_sdk_version=35, uses_libraries=, library_path=/data/app/~~XfjYXN--O1AXfVeYLUykUw==/com.bell.launcher.debug-bzMiIj9vxaIlMxJ0bKqh5A==/lib/x86_64:/data/app/~~XfjYXN--O1AXfVeYLUykUw==/com.bell.launcher.debug-bzMiIj9vxaIlMxJ0bKqh5A==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.bell.launcher.debug
+989:09-14 13:52:04.966  2233  2233 V GraphicsEnvironment: com.bell.launcher.debug is not listed in per-application setting
+991:09-14 13:52:04.967  2233  2233 V GraphicsEnvironment: com.bell.launcher.debug is not listed in ANGLE allowlist or settings, returning default
+1095:09-14 13:52:05.019  1193  1435 D ImsResolver: maybeAddedImsService, packageName: com.bell.launcher.debug
+1096:09-14 13:52:05.019  1193  1435 V ImsResolver: searchForImsServices: package=com.bell.launcher.debug, users=[UserHandle{0}]
+1097:09-14 13:52:05.020  1193  1435 V ImsResolver: searchForImsServices: package=com.bell.launcher.debug, users=[UserHandle{0}]
+1101:09-14 13:52:05.030  1193  1193 W VvmPkgInstalledRcvr: carrierVvmPkgAdded: carrier vvm packages doesn't contain com.bell.launcher.debug
+1281:09-14 13:52:05.478   651   683 D LauncherAppsService: onPackageAdded: triggering onPackageAdded for user=UserHandle{0}, packageName=com.bell.launcher.debug
+1282:09-14 13:52:05.478   651   683 D LauncherAppsService: onPackageAdded: triggering onPackageAdded for user=UserHandle{0}, packageName=com.bell.launcher.debug
+1283:09-14 13:52:05.478   651   683 D LauncherAppsService: onPackageAdded: triggering onPackageAdded for user=UserHandle{0}, packageName=com.bell.launcher.debug
+1284:09-14 13:52:05.478   651   683 D LauncherAppsService: onPackageAdded: triggering onPackageAdded for user=UserHandle{0}, packageName=com.bell.launcher.debug
+1295:09-14 13:52:05.492   651   677 E AppHibernationService: Package com.bell.launcher.debug is not installed for user 0
+1296:09-14 13:52:05.492   651   677 E AppHibernationService: Package com.bell.launcher.debug is not installed for any user
+1297:09-14 13:52:05.493   651   677 E AppHibernationService: Package com.bell.launcher.debug is not installed for user 0
+1298:09-14 13:52:05.493   651   677 E AppHibernationService: Package com.bell.launcher.debug is not installed for any user
+1427:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{eb65d89 com.android.cts.priv.ctsshim/10195} BLOCKED
+1428:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7b5f497 com.android.internal.display.cutout.emulation.corner/10057} BLOCKED
+1429:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{cc95684 com.android.internal.display.cutout.emulation.double/10035} BLOCKED
+1430:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{82e3e6d com.google.android.onetimeinitializer/10143} BLOCKED
+1431:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{803faa2 com.google.android.ext.shared/10125} BLOCKED
+1432:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b5b4333 com.android.virtualmachine.res/10191} BLOCKED
+1433:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{c756f0 com.android.managedprovisioning.auto_generated_rro_product__/10021} BLOCKED
+1434:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{efd5469 com.android.carrierconfig.auto_generated_rro_vendor__/10091} BLOCKED
+1435:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{3cb1eee com.google.android.server.deviceconfig.resources/10194} BLOCKED
+1436:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{afcdf8f com.android.systemui.emulation.pixel_3_xl/10029} BLOCKED
+1437:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{162f21c com.android.systemui.emulation.pixel_4_xl/10012} BLOCKED
+1438:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a8dce25 com.android.systemui.emulation.pixel_fold/10051} BLOCKED
+1439:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{8ce3bfa com.android.providers.telephony.auto_generated_characteristics_rro/10026} BLOCKED
+1440:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{371e5ab com.android.simappdialog.auto_generated_rro_product__/10056} BLOCKED
+1441:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{8bb1408 com.android.htmlviewer/10116} BLOCKED
+1442:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{df227a1 com.google.android.health.connect.backuprestore/10205} BLOCKED
+1443:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{fb41dc6 com.android.systemui.auto_generated_rro_product__/10082} BLOCKED
+1444:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{de73187 com.google.android.soundpicker/10167} BLOCKED
+1445:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{1f168b4 com.google.android.marvin.talkbackoverlay/10089} BLOCKED
+1446:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{e89cdd com.google.android.configupdater/10140} BLOCKED
+1447:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{2c45052 com.android.internal.emulation.pixel_3a_xl/10058} BLOCKED
+1448:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{f7b5f23 com.android.internal.emulation.pixel_6_pro/10031} BLOCKED
+1449:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{6965c20 com.android.internal.emulation.pixel_7_pro/10004} BLOCKED
+1450:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{ed729d9 com.android.internal.emulation.pixel_8_pro/10016} BLOCKED
+1451:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7331f9e com.android.internal.emulation.pixel_9_pro/10023} BLOCKED
+1452:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{69aca7f com.android.internal.emulation.pixel_3a/10079} BLOCKED
+1453:09-14 13:52:05.678   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{6d51a4c com.android.internal.emulation.pixel_4a/10001} BLOCKED
+1454:09-14 13:52:05.679   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{9878a95 com.android.internal.emulation.pixel_6a/10043} BLOCKED
+1455:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{f2d97aa com.android.internal.emulation.pixel_7a/10055} BLOCKED
+1456:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{21b8f9b com.android.internal.emulation.pixel_8a/10074} BLOCKED
+1457:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{85f8f38 com.android.internal.emulation.pixel_9a/10044} BLOCKED
+1458:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{ba33b11 com.google.android.overlay.googlewebview/10071} BLOCKED
+1459:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a58476 com.google.android.hotspot2.osulogin/10198} BLOCKED
+1460:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{e198a77 com.android.simappdialog/10129} BLOCKED
+1461:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{81a66e4 com.android.internal.display.cutout.emulation.hole/10019} BLOCKED
+1462:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{6ef774d com.android.internal.display.cutout.emulation.tall/10040} BLOCKED
+1463:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{cdd7202 com.android.internal.systemui.navbar.threebutton/10022} BLOCKED
+1464:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{2925713 com.android.internal.ranchu.commonoverlay/10036} BLOCKED
+1465:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a890d50 com.android.systemui.auto_generated_rro_vendor__/10088} BLOCKED
+1466:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a493b49 com.android.internal.systemui.navbar.twobutton/10024} BLOCKED
+1467:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{4b4ac4e com.google.android.as/10145} BLOCKED
+1468:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{fc1516f com.android.compos.payload/10214} BLOCKED
+1469:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{6f9ae7c com.android.systemui.emulation.pixel_3/10072} BLOCKED
+1470:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b614305 com.android.systemui.emulation.pixel_4/10027} BLOCKED
+1471:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{5b33f5a com.android.systemui.emulation.pixel_5/10002} BLOCKED
+1472:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{43b958b com.android.systemui.emulation.pixel_6/10073} BLOCKED
+1473:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{9713668 com.android.systemui.emulation.pixel_7/10069} BLOCKED
+1474:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{380a81 com.android.systemui.emulation.pixel_8/10013} BLOCKED
+1475:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{bd5f726 com.android.systemui.emulation.pixel_9/10011} BLOCKED
+1476:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{8cbff67 com.android.printspooler/10128} BLOCKED
+1477:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7575114 com.google.android.connectivity.resources.goldfish.overlay/10092} BLOCKED
+1478:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{459cdbd com.android.dreams.basic/10117} BLOCKED
+1479:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{41a5fb2 com.google.android.networkstack.tethering.emulator/10050} BLOCKED
+1480:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{e0f2b03 com.android.providers.settings.auto_generated_rro_product__/10062} BLOCKED
+1481:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{2e26a80 com.google.android.as.oss/10142} BLOCKED
+1482:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{5da88b9 com.android.traceur.auto_generated_rro_product__/10054} BLOCKED
+1483:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{bcac4fe com.android.internal.emulation.pixel_9_pro_fold/10061} BLOCKED
+1484:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7cf745f com.android.internal.emulation.pixel_3/10030} BLOCKED
+1485:09-14 13:52:05.680   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{943aeac com.android.internal.emulation.pixel_4/10000} BLOCKED
+1486:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{611f775 com.android.internal.emulation.pixel_5/10010} BLOCKED
+1487:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{88a330a com.android.internal.emulation.pixel_6/10039} BLOCKED
+1488:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{220f77b com.android.internal.emulation.pixel_7/10064} BLOCKED
+1489:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7930998 com.android.internal.emulation.pixel_8/10046} BLOCKED
+1490:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a1795f1 com.android.internal.emulation.pixel_9/10068} BLOCKED
+1491:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{52075d6 com.google.android.captiveportallogin/10122} BLOCKED
+1492:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{c3d9057 android.auto_generated_characteristics_rro/10018} BLOCKED
+1493:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{27b2744 com.google.android.appsearch.apk/10189} BLOCKED
+1494:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{6fea02d com.android.musicfx/10101} BLOCKED
+1495:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{f061962 com.google.android.markup/10157} BLOCKED
+1496:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{520daf3 com.google.android.webview/10166} BLOCKED
+1497:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{ca573b0 com.google.android.rkpdapp/10201} BLOCKED
+1498:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{5d21229 com.android.server.telecom.auto_generated_rro_product__/10034} BLOCKED
+1499:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b069ae com.android.phone.auto_generated_characteristics_rro/10009} BLOCKED
+1500:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{5e4334f com.google.android.overlay.googleconfig/10017} BLOCKED
+1501:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7e61adc com.android.bips.auto_generated_rro_product__/10014} BLOCKED
+1502:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b50a7e5 com.google.android.apps.customization.pixel/10156} BLOCKED
+1503:09-14 13:52:05.681   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{49d72ba com.google.android.tag/10102} BLOCKED
+1511:09-14 13:52:05.690   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{5dab56b com.google.android.overlay.permissioncontroller/10076} BLOCKED
+1512:09-14 13:52:05.690   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{d2808c8 com.google.android.partnersetup/10139} BLOCKED
+1513:09-14 13:52:05.690   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{f68dd61 com.google.android.apps.nexuslauncher/10184} BLOCKED
+1514:09-14 13:52:05.690   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{d200086 com.android.theme.font.notoserifsource/10015} BLOCKED
+1515:09-14 13:52:05.690   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{46d3d47 com.google.android.safetycenter.resources/10209} BLOCKED
+1518:09-14 13:52:05.693   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{ceb9f12 com.android.internal.display.cutout.emulation.waterfall/10067} BLOCKED
+1519:09-14 13:52:05.693   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{4b666e3 com.android.internal.systemui.navbar.transparent/10060} BLOCKED
+1520:09-14 13:52:05.693   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b9528e0 com.google.android.connectivity.resources/10193} BLOCKED
+1522:09-14 13:52:05.693   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{e36d799 com.android.providers.contacts.auto_generated_rro_product__/10025} BLOCKED
+1523:09-14 13:52:05.693   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{c609a5e com.google.android.feedback/10180} BLOCKED
+1524:09-14 13:52:05.693   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{6de8e3f com.google.android.printservice.recommendation/10126} BLOCKED
+1525:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{fd3f30c com.android.systemui.emulation.pixel_3a_xl/10065} BLOCKED
+1526:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{8945455 com.android.systemui.emulation.pixel_6_pro/10045} BLOCKED
+1527:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{797fe6a com.android.systemui.emulation.pixel_7_pro/10006} BLOCKED
+1528:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b37cf5b com.android.systemui.emulation.pixel_8_pro/10005} BLOCKED
+1529:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{35333f8 com.android.systemui.emulation.pixel_9_pro/10047} BLOCKED
+1530:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{e12e0d1 com.google.android.accessibility.switchaccess/10168} BLOCKED
+1531:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{12f9736 com.android.carrierconfig.auto_generated_rro_product__/10078} BLOCKED
+1532:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b1a0637 com.android.devicediagnostics.auto_generated_rro_product__/10077} BLOCKED
+1533:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{d8397a4 com.android.providers.partnerbookmarks/10118} BLOCKED
+1535:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{613b90d com.android.wallpaper.livepicker/10100} BLOCKED
+1536:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{5d5f0c2 com.android.providers.telephony.auto_generated_rro_product__/10070} BLOCKED
+1537:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{37eced3 com.android.phone.auto_generated_rro_vendor__/10093} BLOCKED
+1538:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a348a10 com.android.imsserviceentitlement/10131} BLOCKED
+1539:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{2cfd909 com.android.internal.emulation.pixel_9_pro_xl/10083} BLOCKED
+1540:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{c96570e com.google.android.healthconnect.controller/10204} BLOCKED
+1541:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{d5d852f com.android.internal.emulation.pixel_2_xl/10080} BLOCKED
+1542:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{c0373c com.android.internal.emulation.pixel_3_xl/10028} BLOCKED
+1543:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{713fcc5 com.android.internal.emulation.pixel_4_xl/10081} BLOCKED
+1544:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{fe4d61a com.android.internal.emulation.pixel_fold/10052} BLOCKED
+1545:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{fc7454b com.android.bookmarkprovider/10113} BLOCKED
+1546:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{1f78b28 com.google.android.overlay.pixelconfigcommon/10032} BLOCKED
+1547:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{bbca041 com.android.systemui.accessibility.accessibilitymenu.auto_generated_rro_product__/10059} BLOCKED
+1549:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b6a39e6 com.android.systemui.emulation.pixel_3a/10033} BLOCKED
+1550:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7c2eb27 com.android.systemui.emulation.pixel_4a/10066} BLOCKED
+1551:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{8ce31d4 com.android.systemui.emulation.pixel_6a/10003} BLOCKED
+1552:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{f1ff7d com.android.systemui.emulation.pixel_7a/10084} BLOCKED
+1553:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a900e72 com.android.systemui.emulation.pixel_8a/10042} BLOCKED
+1554:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{1e912c3 com.android.systemui.emulation.pixel_9a/10020} BLOCKED
+1555:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{9c69740 com.google.android.settings.intelligence/10137} BLOCKED
+1556:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7241679 com.google.android.uwb.resources/10200} BLOCKED
+1557:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{4523a41 com.android.cts.ctsshim/10196} BLOCKED
+1558:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{3cc9fbe com.google.android.wifi.resources/10197} BLOCKED
+1559:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{1c0181f com.google.android.wifi.dialog/10199} BLOCKED
+1560:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{d1de76c com.android.wallpaper/10179} BLOCKED
+1561:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{c995659 com.android.microdroid.empty_payload/10192} BLOCKED
+1562:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{bc6a135 com.google.android.apps.wallpaper/10185} BLOCKED
+1564:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{caef9ca com.google.android.odad/10138} BLOCKED
+1565:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{2d8173b com.android.settings.auto_generated_rro_product__/10007} BLOCKED
+1566:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{fb80e58 com.android.systemui.emulation.pixel_9_pro_xl/10075} BLOCKED
+1567:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{5cd1bb1 com.android.companiondevicemanager.auto_generated_characteristics_rro/10038} BLOCKED
+1568:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{2aae896 com.android.internal.systemui.navbar.gestural/10087} BLOCKED
+1569:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{fa6ec17 com.android.bluetoothmidiservice/10120} BLOCKED
+1570:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{6cbb804 com.google.android.uwb.resources.goldfish.overlay/10086} BLOCKED
+1571:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{de6c1ed com.android.storagemanager.auto_generated_rro_product__/10063} BLOCKED
+1572:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{4a4f822 com.android.phone.auto_generated_rro_product__/10085} BLOCKED
+1573:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a2432b3 com.android.systemui.emulation.pixel_9_pro_fold/10037} BLOCKED
+1575:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{24e5070 android.auto_generated_rro_product__/10008} BLOCKED
+1576:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{e7a8fe9 com.google.android.photopicker/10213} BLOCKED
+1577:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{93e746e android.auto_generated_rro_vendor__/10090} BLOCKED
+1578:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{225470f com.google.android.apps.restore/10133} BLOCKED
+1579:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{eb65d89 com.android.cts.priv.ctsshim/10195} BLOCKED
+1580:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7b5f497 com.android.internal.display.cutout.emulation.corner/10057} BLOCKED
+1582:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{cc95684 com.android.internal.display.cutout.emulation.double/10035} BLOCKED
+1583:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{82e3e6d com.google.android.onetimeinitializer/10143} BLOCKED
+1584:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{803faa2 com.google.android.ext.shared/10125} BLOCKED
+1585:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b5b4333 com.android.virtualmachine.res/10191} BLOCKED
+1586:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{c756f0 com.android.managedprovisioning.auto_generated_rro_product__/10021} BLOCKED
+1587:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{efd5469 com.android.carrierconfig.auto_generated_rro_vendor__/10091} BLOCKED
+1588:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{3cb1eee com.google.android.server.deviceconfig.resources/10194} BLOCKED
+1589:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{afcdf8f com.android.systemui.emulation.pixel_3_xl/10029} BLOCKED
+1590:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{162f21c com.android.systemui.emulation.pixel_4_xl/10012} BLOCKED
+1591:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a8dce25 com.android.systemui.emulation.pixel_fold/10051} BLOCKED
+1592:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{8ce3bfa com.android.providers.telephony.auto_generated_characteristics_rro/10026} BLOCKED
+1593:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{371e5ab com.android.simappdialog.auto_generated_rro_product__/10056} BLOCKED
+1594:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{8bb1408 com.android.htmlviewer/10116} BLOCKED
+1596:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{df227a1 com.google.android.health.connect.backuprestore/10205} BLOCKED
+1597:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{fb41dc6 com.android.systemui.auto_generated_rro_product__/10082} BLOCKED
+1598:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{de73187 com.google.android.soundpicker/10167} BLOCKED
+1599:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{1f168b4 com.google.android.marvin.talkbackoverlay/10089} BLOCKED
+1600:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{e89cdd com.google.android.configupdater/10140} BLOCKED
+1601:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{2c45052 com.android.internal.emulation.pixel_3a_xl/10058} BLOCKED
+1602:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{f7b5f23 com.android.internal.emulation.pixel_6_pro/10031} BLOCKED
+1603:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{6965c20 com.android.internal.emulation.pixel_7_pro/10004} BLOCKED
+1604:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{ed729d9 com.android.internal.emulation.pixel_8_pro/10016} BLOCKED
+1605:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7331f9e com.android.internal.emulation.pixel_9_pro/10023} BLOCKED
+1606:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{69aca7f com.android.internal.emulation.pixel_3a/10079} BLOCKED
+1607:09-14 13:52:05.694   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{6d51a4c com.android.internal.emulation.pixel_4a/10001} BLOCKED
+1608:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{9878a95 com.android.internal.emulation.pixel_6a/10043} BLOCKED
+1610:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{f2d97aa com.android.internal.emulation.pixel_7a/10055} BLOCKED
+1611:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{21b8f9b com.android.internal.emulation.pixel_8a/10074} BLOCKED
+1612:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{85f8f38 com.android.internal.emulation.pixel_9a/10044} BLOCKED
+1613:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{ba33b11 com.google.android.overlay.googlewebview/10071} BLOCKED
+1614:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a58476 com.google.android.hotspot2.osulogin/10198} BLOCKED
+1615:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{e198a77 com.android.simappdialog/10129} BLOCKED
+1616:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{81a66e4 com.android.internal.display.cutout.emulation.hole/10019} BLOCKED
+1617:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{6ef774d com.android.internal.display.cutout.emulation.tall/10040} BLOCKED
+1618:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{cdd7202 com.android.internal.systemui.navbar.threebutton/10022} BLOCKED
+1619:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{2925713 com.android.internal.ranchu.commonoverlay/10036} BLOCKED
+1621:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a890d50 com.android.systemui.auto_generated_rro_vendor__/10088} BLOCKED
+1622:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a493b49 com.android.internal.systemui.navbar.twobutton/10024} BLOCKED
+1623:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{4b4ac4e com.google.android.as/10145} BLOCKED
+1624:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{fc1516f com.android.compos.payload/10214} BLOCKED
+1625:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{6f9ae7c com.android.systemui.emulation.pixel_3/10072} BLOCKED
+1626:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b614305 com.android.systemui.emulation.pixel_4/10027} BLOCKED
+1627:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{5b33f5a com.android.systemui.emulation.pixel_5/10002} BLOCKED
+1628:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{43b958b com.android.systemui.emulation.pixel_6/10073} BLOCKED
+1629:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{9713668 com.android.systemui.emulation.pixel_7/10069} BLOCKED
+1630:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{380a81 com.android.systemui.emulation.pixel_8/10013} BLOCKED
+1631:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{bd5f726 com.android.systemui.emulation.pixel_9/10011} BLOCKED
+1632:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{8cbff67 com.android.printspooler/10128} BLOCKED
+1634:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7575114 com.google.android.connectivity.resources.goldfish.overlay/10092} BLOCKED
+1635:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{459cdbd com.android.dreams.basic/10117} BLOCKED
+1636:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{41a5fb2 com.google.android.networkstack.tethering.emulator/10050} BLOCKED
+1637:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{e0f2b03 com.android.providers.settings.auto_generated_rro_product__/10062} BLOCKED
+1638:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{2e26a80 com.google.android.as.oss/10142} BLOCKED
+1639:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{5da88b9 com.android.traceur.auto_generated_rro_product__/10054} BLOCKED
+1640:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{bcac4fe com.android.internal.emulation.pixel_9_pro_fold/10061} BLOCKED
+1641:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7cf745f com.android.internal.emulation.pixel_3/10030} BLOCKED
+1642:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{943aeac com.android.internal.emulation.pixel_4/10000} BLOCKED
+1643:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{611f775 com.android.internal.emulation.pixel_5/10010} BLOCKED
+1644:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{88a330a com.android.internal.emulation.pixel_6/10039} BLOCKED
+1645:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{220f77b com.android.internal.emulation.pixel_7/10064} BLOCKED
+1646:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7930998 com.android.internal.emulation.pixel_8/10046} BLOCKED
+1647:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a1795f1 com.android.internal.emulation.pixel_9/10068} BLOCKED
+1649:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{52075d6 com.google.android.captiveportallogin/10122} BLOCKED
+1650:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{c3d9057 android.auto_generated_characteristics_rro/10018} BLOCKED
+1651:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{27b2744 com.google.android.appsearch.apk/10189} BLOCKED
+1652:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{6fea02d com.android.musicfx/10101} BLOCKED
+1653:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{f061962 com.google.android.markup/10157} BLOCKED
+1654:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{520daf3 com.google.android.webview/10166} BLOCKED
+1655:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{ca573b0 com.google.android.rkpdapp/10201} BLOCKED
+1656:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{5d21229 com.android.server.telecom.auto_generated_rro_product__/10034} BLOCKED
+1657:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b069ae com.android.phone.auto_generated_characteristics_rro/10009} BLOCKED
+1658:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{5e4334f com.google.android.overlay.googleconfig/10017} BLOCKED
+1660:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7e61adc com.android.bips.auto_generated_rro_product__/10014} BLOCKED
+1661:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b50a7e5 com.google.android.apps.customization.pixel/10156} BLOCKED
+1662:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{49d72ba com.google.android.tag/10102} BLOCKED
+1663:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{5dab56b com.google.android.overlay.permissioncontroller/10076} BLOCKED
+1664:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{d2808c8 com.google.android.partnersetup/10139} BLOCKED
+1665:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{f68dd61 com.google.android.apps.nexuslauncher/10184} BLOCKED
+1666:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{d200086 com.android.theme.font.notoserifsource/10015} BLOCKED
+1667:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{46d3d47 com.google.android.safetycenter.resources/10209} BLOCKED
+1668:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{ceb9f12 com.android.internal.display.cutout.emulation.waterfall/10067} BLOCKED
+1669:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{4b666e3 com.android.internal.systemui.navbar.transparent/10060} BLOCKED
+1670:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b9528e0 com.google.android.connectivity.resources/10193} BLOCKED
+1672:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{e36d799 com.android.providers.contacts.auto_generated_rro_product__/10025} BLOCKED
+1673:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{c609a5e com.google.android.feedback/10180} BLOCKED
+1674:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{6de8e3f com.google.android.printservice.recommendation/10126} BLOCKED
+1675:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{fd3f30c com.android.systemui.emulation.pixel_3a_xl/10065} BLOCKED
+1676:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{8945455 com.android.systemui.emulation.pixel_6_pro/10045} BLOCKED
+1677:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{797fe6a com.android.systemui.emulation.pixel_7_pro/10006} BLOCKED
+1678:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b37cf5b com.android.systemui.emulation.pixel_8_pro/10005} BLOCKED
+1679:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{35333f8 com.android.systemui.emulation.pixel_9_pro/10047} BLOCKED
+1680:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{e12e0d1 com.google.android.accessibility.switchaccess/10168} BLOCKED
+1681:09-14 13:52:05.695   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{12f9736 com.android.carrierconfig.auto_generated_rro_product__/10078} BLOCKED
+1703:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b1a0637 com.android.devicediagnostics.auto_generated_rro_product__/10077} BLOCKED
+1704:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{d8397a4 com.android.providers.partnerbookmarks/10118} BLOCKED
+1705:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{613b90d com.android.wallpaper.livepicker/10100} BLOCKED
+1706:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{5d5f0c2 com.android.providers.telephony.auto_generated_rro_product__/10070} BLOCKED
+1707:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{37eced3 com.android.phone.auto_generated_rro_vendor__/10093} BLOCKED
+1708:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a348a10 com.android.imsserviceentitlement/10131} BLOCKED
+1709:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{2cfd909 com.android.internal.emulation.pixel_9_pro_xl/10083} BLOCKED
+1710:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{c96570e com.google.android.healthconnect.controller/10204} BLOCKED
+1711:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{d5d852f com.android.internal.emulation.pixel_2_xl/10080} BLOCKED
+1712:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{c0373c com.android.internal.emulation.pixel_3_xl/10028} BLOCKED
+1713:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{713fcc5 com.android.internal.emulation.pixel_4_xl/10081} BLOCKED
+1714:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{fe4d61a com.android.internal.emulation.pixel_fold/10052} BLOCKED
+1715:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{fc7454b com.android.bookmarkprovider/10113} BLOCKED
+1716:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{1f78b28 com.google.android.overlay.pixelconfigcommon/10032} BLOCKED
+1717:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{bbca041 com.android.systemui.accessibility.accessibilitymenu.auto_generated_rro_product__/10059} BLOCKED
+1718:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{b6a39e6 com.android.systemui.emulation.pixel_3a/10033} BLOCKED
+1719:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7c2eb27 com.android.systemui.emulation.pixel_4a/10066} BLOCKED
+1720:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{8ce31d4 com.android.systemui.emulation.pixel_6a/10003} BLOCKED
+1721:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{f1ff7d com.android.systemui.emulation.pixel_7a/10084} BLOCKED
+1722:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a900e72 com.android.systemui.emulation.pixel_8a/10042} BLOCKED
+1723:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{1e912c3 com.android.systemui.emulation.pixel_9a/10020} BLOCKED
+1724:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{9c69740 com.google.android.settings.intelligence/10137} BLOCKED
+1725:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{7241679 com.google.android.uwb.resources/10200} BLOCKED
+1726:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{4523a41 com.android.cts.ctsshim/10196} BLOCKED
+1727:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{3cc9fbe com.google.android.wifi.resources/10197} BLOCKED
+1728:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{1c0181f com.google.android.wifi.dialog/10199} BLOCKED
+1729:09-14 13:52:05.709   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{d1de76c com.android.wallpaper/10179} BLOCKED
+1730:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{c995659 com.android.microdroid.empty_payload/10192} BLOCKED
+1731:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{bc6a135 com.google.android.apps.wallpaper/10185} BLOCKED
+1732:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{caef9ca com.google.android.odad/10138} BLOCKED
+1733:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{2d8173b com.android.settings.auto_generated_rro_product__/10007} BLOCKED
+1734:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{fb80e58 com.android.systemui.emulation.pixel_9_pro_xl/10075} BLOCKED
+1735:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{5cd1bb1 com.android.companiondevicemanager.auto_generated_characteristics_rro/10038} BLOCKED
+1736:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{2aae896 com.android.internal.systemui.navbar.gestural/10087} BLOCKED
+1737:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{fa6ec17 com.android.bluetoothmidiservice/10120} BLOCKED
+1738:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{6cbb804 com.google.android.uwb.resources.goldfish.overlay/10086} BLOCKED
+1739:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{de6c1ed com.android.storagemanager.auto_generated_rro_product__/10063} BLOCKED
+1740:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{4a4f822 com.android.phone.auto_generated_rro_product__/10085} BLOCKED
+1741:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{a2432b3 com.android.systemui.emulation.pixel_9_pro_fold/10037} BLOCKED
+1742:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{24e5070 android.auto_generated_rro_product__/10008} BLOCKED
+1743:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{e7a8fe9 com.google.android.photopicker/10213} BLOCKED
+1744:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{93e746e android.auto_generated_rro_vendor__/10090} BLOCKED
+1745:09-14 13:52:05.710   651  1946 I AppsFilter: interaction: PackageSetting{3040aff com.bell.launcher.debug/10216} -> PackageSetting{225470f com.google.android.apps.restore/10133} BLOCKED
+1939:09-14 13:52:06.035   522   554 D NativePermissionController: updatePackagesForUid, UidPackageState{uid: 10216, packageNames: [com.bell.launcher.debug]}
+1945:09-14 13:52:06.044   651   959 I AppWidgetServiceImpl: Updating package stopped masked state for uid 10216 package com.bell.launcher.debug isStopped false
