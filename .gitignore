@@ -8,3 +8,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Ключ підпису й пароль до нього. У репозиторій не потрапляють НІКОЛИ:
+# хто має ключ — той може випустити «оновлення» вашого застосунку.
+keystore.properties
+*.jks
+*.keystore

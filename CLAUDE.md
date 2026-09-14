@@ -32,6 +32,28 @@ adb logcat -s ArtefactLauncher WeatherRepository AndroidRuntime
 **Перед тим як казати «готово», запусти `compileDebugKotlin`.** Компілятор ловить
 90% помилок, які тут коштували цілих ітерацій наосліп.
 
+### Підпис і встановлення на телефон
+
+Play Захист блокує APK, підписані **debug-ключем** — для нього це застосунок
+від невідомого розробника. Тому для телефона збираємо release зі своїм ключем:
+
+```bash
+MAKE-KEY.bat                       # один раз: створює artefact-release.jks
+# скопіювати keystore.properties.example → keystore.properties, вписати пароль
+gradlew.bat assembleRelease
+# APK: app/build/outputs/apk/release/app-release.apk
+```
+
+`keystore.properties` і `*.jks` у `.gitignore`. **Ключ і пароль треба зберегти**:
+без них наступна версія не встановиться поверх старої, тільки поруч із нуля.
+
+Друга причина блокування — `QUERY_ALL_PACKAGES`. Його прибрано з маніфеста
+(див. коментар там) і **повертати не можна**: лаунчеру він не потрібен,
+а Google вважає його особливо чутливим.
+
+Debug-збірка має `applicationIdSuffix = ".debug"`, тобто це окремий застосунок.
+Перед першим встановленням release стару debug-версію треба видалити.
+
 ### Публікація
 `PUSH.bat` — комітить усе й пушить у `main`, після чого GitHub Actions збирає APK
 і ганяє smoke-тест на емуляторі (API 34 і 36). Репозиторій:

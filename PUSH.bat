@@ -19,6 +19,10 @@ if exist "ci-smoke-workflow.yml" (
     move /y "ci-smoke-workflow.yml" ".github\workflows\smoke.yml" >nul
     echo [OK] emulator smoke-test workflow installed
 )
+if exist "ci-release-workflow.yml" (
+    move /y "ci-release-workflow.yml" ".github\workflows\release.yml" >nul
+    echo [OK] signed-release workflow installed
+)
 
 rem --- screens merged into AppearanceScreen.kt, old files must go ---
 set "OLD1=app\src\main\java\com\bell\launcher\ui\settings\ThemeGallery.kt"
