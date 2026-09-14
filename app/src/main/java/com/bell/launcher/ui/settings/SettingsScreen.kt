@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.bell.launcher.data.GestureAction
 import com.bell.launcher.data.GestureSlot
+import com.bell.launcher.data.HomeOrder
 import com.bell.launcher.data.LauncherSettings
 
 @Composable
@@ -50,7 +51,8 @@ fun SettingsScreen(
     onOpenHidden: () -> Unit,
     onOpenFavorites: () -> Unit,
     onAddWidget: () -> Unit,
-    onRailSide: (Boolean) -> Unit,
+    onMirrored: (Boolean) -> Unit,
+    onHomeOrder: (HomeOrder) -> Unit,
     onRailFeedback: (Boolean) -> Unit,
     onGesture: (GestureSlot, GestureAction) -> Unit,
     onWeatherEnabled: (Boolean) -> Unit,
@@ -103,12 +105,23 @@ fun SettingsScreen(
                 RowItem(title = "Додати віджет", subtitle = "Обрати зі списку системи", onClick = onAddWidget)
 
                 ChoiceItem(
-                    title = "Смуга алфавіту",
-                    current = if (settings.railOnLeft) "Зліва" else "Справа",
-                    options = listOf("Справа" to false, "Зліва" to true),
-                    subtitle = "Протилежний край теж не реагує на свайпи — " +
-                        "список можна гортати будь-якою рукою",
-                    onSelect = onRailSide,
+                    title = "Розташування",
+                    current = if (settings.mirrored) "Ліворуч" else "Праворуч",
+                    options = listOf("Праворуч" to false, "Ліворуч" to true),
+                    subtitle = "Дзеркалить екран цілком: алфавіт і додатки " +
+                        "міняються місцями разом із годинником",
+                    onSelect = onMirrored,
+                )
+                ChoiceItem(
+                    title = "Порядок додатків",
+                    current = settings.homeOrder.title,
+                    options = HomeOrder.entries.map { it.title to it },
+                    subtitle = when (settings.homeOrder) {
+                        HomeOrder.MANUAL -> "Переміщення — довгий тап на рядку"
+                        HomeOrder.FREQUENCY -> "Найчастіші зверху. Віджети й папки лишаються на місці"
+                        HomeOrder.ALPHABET -> "Віджети й папки лишаються на місці"
+                    },
+                    onSelect = onHomeOrder,
                 )
                 SwitchItem(
                     title = "Відгук при гортанні алфавіту",

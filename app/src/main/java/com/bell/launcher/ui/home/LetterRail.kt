@@ -4,18 +4,14 @@ import android.view.HapticFeedbackConstants
 import android.view.SoundEffectConstants
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,19 +28,15 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.abs
 import kotlin.math.exp
-import kotlin.math.roundToInt
 
 private val ITEM_HEIGHT = 21.dp
 
 /** Ширина зони дотику — під великий палець. */
 val RAIL_WIDTH = 76.dp
-
-private val BUBBLE_SIZE = 46.dp
 
 /**
  * Алфавітний покажчик уздовж бічного краю (правого або лівого).
@@ -59,10 +51,10 @@ fun LetterRail(
     letters: List<String>,
     active: String?,
     color: Color,
-    bubbleColor: Color,
-    bubbleTextColor: Color,
     onActiveChange: (String) -> Unit,
     onRelease: () -> Unit,
+    /** Палець на смузі. Потрібно назовні, бо показник літери живе поза рейкою. */
+    onDraggingChange: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
     /** Смуга ліворуч — дзеркальне розташування для лівої руки. */
     onLeft: Boolean = false,
@@ -73,8 +65,6 @@ fun LetterRail(
 
     val density = LocalDensity.current
     val itemPx = with(density) { ITEM_HEIGHT.toPx() }
-    val bubbleHalfPx = with(density) { (BUBBLE_SIZE / 2).toPx() }
-    val bubbleShiftPx = with(density) { 86.dp.toPx() }
     val amplitudePx = with(density) { 78.dp.toPx() }
     val spreadPx = with(density) { 96.dp.toPx() }
 
@@ -105,6 +95,7 @@ fun LetterRail(
                         val down = awaitFirstDown()
                         down.consume()
                         dragging = true
+                        onDraggingChange(true)
 
                         // Літера, на якій палець стоїть зараз. Порівнювати з [active]
                         // не можна: воно приходить назад через рекомпозицію із
@@ -136,6 +127,7 @@ fun LetterRail(
                         }
 
                         dragging = false
+                        onDraggingChange(false)
                         onRelease()
                     }
                 },
@@ -175,28 +167,8 @@ fun LetterRail(
             }
         }
 
-        if (dragging && active != null) {
-            Box(
-                Modifier
-                    .align(if (onLeft) Alignment.TopStart else Alignment.TopEnd)
-                    .offset {
-                        IntOffset(
-                            // Бульбашка завжди зсувається всередину екрана.
-                            x = (direction * bubbleShiftPx).roundToInt(),
-                            y = (pointerY.floatValue - bubbleHalfPx).roundToInt(),
-                        )
-                    }
-                    .size(BUBBLE_SIZE)
-                    .background(bubbleColor, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = active,
-                    color = bubbleTextColor,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-        }
+        // Бульбашки, що їхала за пальцем, тут більше немає: вона опинялася рівно
+        // під долонею й нічого не показувала. Замість неї — показник на рівні
+        // годинника, він живе в HomeScreen.
     }
 }

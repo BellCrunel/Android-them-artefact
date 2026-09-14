@@ -51,6 +51,13 @@ enum class FontChoice(val title: String, val deviceName: String?) {
     CURSIVE("Рукописний", "cursive"),
 }
 
+/** Порядок рядків на головному екрані. */
+enum class HomeOrder(val title: String) {
+    MANUAL("Вручну"),
+    FREQUENCY("За частотою"),
+    ALPHABET("За абеткою"),
+}
+
 data class LauncherSettings(
     val themeId: String? = null,
     val swipeUp: GestureAction = GestureAction.OPEN_DRAWER,
@@ -58,7 +65,10 @@ data class LauncherSettings(
     val twoFingerSwipeDown: GestureAction = GestureAction.OPEN_SETTINGS,
     val iconScale: Float = 1f,
     val showIconsOverride: Boolean? = null,
+    /** Показувати назви додатків на головному екрані (у шухляді вони завжди є). */
+    val showLabels: Boolean = true,
     val hiddenApps: Set<String> = emptySet(),
+    val homeOrder: HomeOrder = HomeOrder.MANUAL,
     // вигляд
     val iconStyle: IconStyle = IconStyle.THEME,
     val iconPackPackage: String? = null,
@@ -70,11 +80,17 @@ data class LauncherSettings(
     val fontChoice: FontChoice = FontChoice.THEME,
     /** null = як у темі; інакше "" (1433), ":" (14:33) або " " (14 33). */
     val clockSeparator: String? = ":",
-    // алфавітна смуга
-    /** Смуга алфавіту ліворуч замість правого краю. */
-    val railOnLeft: Boolean = false,
+    // дзеркало екрана
+    /**
+     * Дзеркальна розкладка: алфавіт і додатки міняються місцями.
+     * Керує стороною смуги, вирівнюванням рядків, годинника, планки,
+     * показника літери й зоною жесту — усім одразу.
+     */
+    val mirrored: Boolean = false,
     /** Клац і легка вібрація при протягуванні по алфавіту. */
     val railFeedback: Boolean = true,
+    /** Щільність планки під списком, 0 = вимкнено. */
+    val plateAlpha: Float = 0f,
     // погода
     val weatherEnabled: Boolean = true,
     val useLocation: Boolean = true,
@@ -105,8 +121,13 @@ class SettingsRepository(context: Context) {
         wallpaperDim = prefs.getFloat(KEY_WALLPAPER_DIM, 0.25f),
         fontChoice = enumOr(KEY_FONT, FontChoice.THEME),
         clockSeparator = if (prefs.contains(KEY_CLOCK_SEP)) prefs.getString(KEY_CLOCK_SEP, ":") else ":",
-        railOnLeft = prefs.getBoolean(KEY_RAIL_LEFT, false),
+        showLabels = prefs.getBoolean(KEY_SHOW_LABELS, true),
+        homeOrder = enumOr(KEY_HOME_ORDER, HomeOrder.MANUAL),
+        // Хто вже перемкнув стару «смугу ліворуч» — отримує повне дзеркало,
+        // бо саме цього він і хотів: сама лише смуга зліва не мала сенсу.
+        mirrored = prefs.getBoolean(KEY_MIRRORED, prefs.getBoolean(KEY_RAIL_LEFT, false)),
         railFeedback = prefs.getBoolean(KEY_RAIL_FEEDBACK, true),
+        plateAlpha = prefs.getFloat(KEY_PLATE_ALPHA, 0f),
         weatherEnabled = prefs.getBoolean(KEY_WEATHER, true),
         useLocation = prefs.getBoolean(KEY_USE_LOCATION, true),
         manualCity = prefs.getString(KEY_CITY, "").orEmpty(),
@@ -134,8 +155,11 @@ class SettingsRepository(context: Context) {
             putFloat(KEY_WALLPAPER_DIM, next.wallpaperDim)
             putString(KEY_FONT, next.fontChoice.name)
             if (next.clockSeparator == null) remove(KEY_CLOCK_SEP) else putString(KEY_CLOCK_SEP, next.clockSeparator)
-            putBoolean(KEY_RAIL_LEFT, next.railOnLeft)
+            putBoolean(KEY_SHOW_LABELS, next.showLabels)
+            putString(KEY_HOME_ORDER, next.homeOrder.name)
+            putBoolean(KEY_MIRRORED, next.mirrored)
             putBoolean(KEY_RAIL_FEEDBACK, next.railFeedback)
+            putFloat(KEY_PLATE_ALPHA, next.plateAlpha)
             putBoolean(KEY_WEATHER, next.weatherEnabled)
             putBoolean(KEY_USE_LOCATION, next.useLocation)
             putString(KEY_CITY, next.manualCity)
@@ -156,7 +180,10 @@ class SettingsRepository(context: Context) {
     }
 
     fun setIconScale(scale: Float) = mutate { it.copy(iconScale = scale.coerceIn(0.7f, 1.5f)) }
-    fun setIconsOverride(value: Boolean?) = mutate { it.copy(showIconsOverride = value) }
+    /** Дзеркальне обмеження до [setShowLabels]: разом із назвами іконки не ховаються. */
+    fun setIconsOverride(value: Boolean?) = mutate {
+        if (value == false && !it.showLabels) it else it.copy(showIconsOverride = value)
+    }
     fun toggleHidden(key: String) = mutate {
         it.copy(hiddenApps = if (key in it.hiddenApps) it.hiddenApps - key else it.hiddenApps + key)
     }
@@ -173,8 +200,18 @@ class SettingsRepository(context: Context) {
     fun setWallpaperDim(value: Float) = mutate { it.copy(wallpaperDim = value.coerceIn(0f, 0.85f)) }
     fun setFont(font: FontChoice) = mutate { it.copy(fontChoice = font) }
     fun setClockSeparator(value: String?) = mutate { it.copy(clockSeparator = value) }
-    fun setRailOnLeft(value: Boolean) = mutate { it.copy(railOnLeft = value) }
+    fun setMirrored(value: Boolean) = mutate { it.copy(mirrored = value) }
     fun setRailFeedback(value: Boolean) = mutate { it.copy(railFeedback = value) }
+    fun setPlateAlpha(value: Float) = mutate { it.copy(plateAlpha = value.coerceIn(0f, 0.8f)) }
+    fun setHomeOrder(value: HomeOrder) = mutate { it.copy(homeOrder = value) }
+
+    /**
+     * Вимкнути можна щось одне. Якщо сховати і іконки, і назви, головний екран
+     * стане порожнім, і повернути все назад буде нічим — рядків просто не видно.
+     */
+    fun setShowLabels(value: Boolean) = mutate {
+        if (!value && it.showIconsOverride == false) it else it.copy(showLabels = value)
+    }
 
     fun setWeatherEnabled(value: Boolean) = mutate { it.copy(weatherEnabled = value) }
     fun setUseLocation(value: Boolean) = mutate { it.copy(useLocation = value) }
@@ -197,8 +234,13 @@ class SettingsRepository(context: Context) {
         private const val KEY_WALLPAPER_DIM = "wallpaper_dim"
         private const val KEY_FONT = "font_choice"
         private const val KEY_CLOCK_SEP = "clock_separator"
+        /** Застарілий ключ: лишається тільки щоб перенести старе значення в KEY_MIRRORED. */
         private const val KEY_RAIL_LEFT = "rail_on_left"
+        private const val KEY_MIRRORED = "mirrored"
         private const val KEY_RAIL_FEEDBACK = "rail_feedback"
+        private const val KEY_SHOW_LABELS = "show_labels"
+        private const val KEY_PLATE_ALPHA = "plate_alpha"
+        private const val KEY_HOME_ORDER = "home_order"
         private const val KEY_WEATHER = "weather_enabled"
         private const val KEY_USE_LOCATION = "weather_use_location"
         private const val KEY_CITY = "weather_city"

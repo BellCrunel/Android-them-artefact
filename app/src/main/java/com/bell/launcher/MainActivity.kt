@@ -63,6 +63,14 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+    private val pickWallpaperLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri == null) return@registerForActivityResult
+            // Копію робимо одразу під розмір екрана з запасом на паралакс.
+            val maxWidth = (resources.displayMetrics.widthPixels * 1.5f).toInt()
+            viewModel.importWallpaper(uri, maxWidth)
+        }
+
     private val locationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) {
@@ -121,6 +129,10 @@ class MainActivity : ComponentActivity() {
                         onImportTheme = { importThemeLauncher.launch(arrayOf("*/*")) },
                         onRequestLocationPermission = {
                             locationPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+                        },
+                        onPickWallpaper = {
+                            runCatching { pickWallpaperLauncher.launch(arrayOf("image/*")) }
+                            Unit
                         },
                     )
                 }

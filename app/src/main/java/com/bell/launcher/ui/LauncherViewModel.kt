@@ -10,6 +10,7 @@ import com.bell.launcher.data.BackgroundMode
 import com.bell.launcher.data.FontChoice
 import com.bell.launcher.data.GestureAction
 import com.bell.launcher.data.GestureSlot
+import com.bell.launcher.data.HomeOrder
 import com.bell.launcher.data.IconStyle
 import com.bell.launcher.data.AppNotification
 import com.bell.launcher.data.LauncherSettings
@@ -65,6 +66,9 @@ class LauncherViewModel(private val container: AppContainer) : ViewModel() {
 
     /** Активні сповіщення, згруповані за пакетом додатка. */
     val notifications: StateFlow<Map<String, AppNotification>> = NotificationStore.items
+
+    /** Бали частоти використання — для режиму сортування «За частотою». */
+    val usageScores: StateFlow<Map<String, Float>> = container.usageCounter.scores
 
     fun openNotification(packageName: String) = NotificationStore.open(packageName)
     fun dismissNotification(packageName: String) = NotificationStore.dismiss(packageName)
@@ -179,14 +183,55 @@ class LauncherViewModel(private val container: AppContainer) : ViewModel() {
     fun setWallpaper(file: String?) = container.settingsRepository.setWallpaper(file)
     fun setWallpaperDim(value: Float) = container.settingsRepository.setWallpaperDim(value)
 
-    /** Зображення з assets/wallpapers. */
+    /** Вбудовані + додані користувачем зображення. */
     fun wallpapers(): List<WallpaperItem> = container.wallpaperRepository.list()
+
+    private val _wallpaperVersion = MutableStateFlow(0)
+    /** Змінюється після додавання чи видалення — щоб екран перечитав список. */
+    val wallpaperVersion: StateFlow<Int> = _wallpaperVersion
+
+    fun importWallpaper(uri: android.net.Uri, maxWidth: Int) {
+        viewModelScope.launch {
+            val added = container.wallpaperRepository.import(uri, maxWidth)
+            if (added != null) {
+                container.settingsRepository.setWallpaper(added)
+                container.settingsRepository.setBackgroundMode(BackgroundMode.IMAGE)
+            }
+            _wallpaperVersion.value += 1
+        }
+    }
+
+    fun deleteWallpaper(fileName: String) {
+        if (!container.wallpaperRepository.delete(fileName)) return
+        // Якщо видалили ту, що стояла фоном — інакше лишиться порожній екран.
+        if (container.settingsRepository.settings.value.wallpaperFile == fileName) {
+            container.settingsRepository.setWallpaper(null)
+            container.settingsRepository.setBackgroundMode(BackgroundMode.SYSTEM)
+        }
+        _wallpaperVersion.value += 1
+    }
+
+    /**
+     * Своїх шпалер ми не постачаємо: інтеграція з Unsplash чи Pexels потребує
+     * ключа API, зашитого в APK, і обов'язкової атрибуції автора. Тому просто
+     * відкриваємо пошук у браузері — далі файл береться через «Додати з галереї».
+     */
+    fun openWallpaperSearch() {
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://unsplash.com/t/wallpapers"),
+        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { container.context.startActivity(intent) }
+    }
     fun loadWallpaper(fileName: String, maxWidth: Int = 1440) =
         container.wallpaperRepository.load(fileName, maxWidth)
     fun setFont(font: FontChoice) = container.settingsRepository.setFont(font)
     fun setClockSeparator(value: String?) = container.settingsRepository.setClockSeparator(value)
-    fun setRailOnLeft(value: Boolean) = container.settingsRepository.setRailOnLeft(value)
+    fun setMirrored(value: Boolean) = container.settingsRepository.setMirrored(value)
     fun setRailFeedback(value: Boolean) = container.settingsRepository.setRailFeedback(value)
+    fun setShowLabels(value: Boolean) = container.settingsRepository.setShowLabels(value)
+    fun setPlateAlpha(value: Float) = container.settingsRepository.setPlateAlpha(value)
+    fun setHomeOrder(value: HomeOrder) = container.settingsRepository.setHomeOrder(value)
 
     fun setWeatherEnabled(value: Boolean) {
         container.settingsRepository.setWeatherEnabled(value)

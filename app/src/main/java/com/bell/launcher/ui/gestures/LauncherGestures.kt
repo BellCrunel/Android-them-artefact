@@ -12,34 +12,33 @@ import kotlin.math.abs
  * Спостерігач жестів, який НЕ споживає події — тому список, іконки та віджети
  * продовжують працювати як завжди.
  *
- * [excludeRightPx] і [excludeLeftPx] — смуги вздовж бічних країв, де жести
- * лаунчера ігноруються. В одній із них живе алфавітний покажчик: без цієї зони
- * протягування по літерах угору відкривало б пошук, а вниз — шторку сповіщень.
- * Друга смуга — дзеркальна зона під палець іншої руки: там список можна
- * спокійно гортати, не боячись зачепити жест.
+ * Жест живе не на всій ширині, а в смузі [bandStart]…[bandEnd] (частки ширини
+ * екрана). Причин дві: в одному краю живе алфавітний покажчик — без вилучення
+ * протягування по літерах угору відкривало б пошук, а вниз шторку сповіщень;
+ * а в колонці з рядками додатків палець гортає список, і продовження того
+ * самого руху не повинно раптом відкривати пошук.
  */
 fun Modifier.launcherGestures(
     onSwipeUp: () -> Unit,
     onSwipeDown: () -> Unit,
     onTwoFingerSwipeDown: () -> Unit,
-    excludeRightPx: Float = 0f,
-    excludeLeftPx: Float = 0f,
+    bandStart: Float = 0f,
+    bandEnd: Float = 1f,
 ): Modifier = this.pointerInput(
     onSwipeUp,
     onSwipeDown,
     onTwoFingerSwipeDown,
-    excludeRightPx,
-    excludeLeftPx,
+    bandStart,
+    bandEnd,
 ) {
     val threshold = viewConfiguration.touchSlop * 3.5f
 
     awaitEachGesture {
         val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
 
-        // Дотик почався в бічній зоні — цей жест не наш
-        val inRight = excludeRightPx > 0f && down.position.x > size.width - excludeRightPx
-        val inLeft = excludeLeftPx > 0f && down.position.x < excludeLeftPx
-        if (inRight || inLeft) {
+        // Дотик почався поза робочою смугою — цей жест не наш
+        val x = down.position.x / size.width.coerceAtLeast(1)
+        if (x < bandStart || x > bandEnd) {
             while (true) {
                 val event = awaitPointerEvent(PointerEventPass.Initial)
                 if (event.changes.none { it.pressed }) break

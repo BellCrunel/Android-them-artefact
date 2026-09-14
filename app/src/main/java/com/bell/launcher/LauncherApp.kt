@@ -5,6 +5,7 @@ import android.content.Context
 import com.bell.launcher.data.AppRepository
 import com.bell.launcher.data.LayoutRepository
 import com.bell.launcher.data.SettingsRepository
+import com.bell.launcher.data.UsageCounter
 import com.bell.launcher.data.WallpaperRepository
 import com.bell.launcher.data.WeatherRepository
 import com.bell.launcher.theme.IconLoader
@@ -17,7 +18,14 @@ class AppContainer(val context: Context) {
     val themeRepository = ThemeRepository(context).also { CrashLog.step(context, "ThemeRepository ok") }
     val weatherRepository = WeatherRepository(context).also { CrashLog.step(context, "WeatherRepository ok") }
     val wallpaperRepository = WallpaperRepository(context).also { CrashLog.step(context, "WallpaperRepository ok") }
+    val usageCounter = UsageCounter(context).also { CrashLog.step(context, "UsageCounter ok") }
     val iconLoader = IconLoader(context).also { CrashLog.step(context, "IconLoader ok") }
+
+    init {
+        // Лічильник живе окремо, але рахувати запуски має саме AppRepository —
+        // інакше про це довелося б пам'ятати в кожному місці виклику launch().
+        appRepository.onLaunch = usageCounter::record
+    }
 }
 
 class LauncherApp : Application() {

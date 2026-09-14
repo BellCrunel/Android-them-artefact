@@ -30,6 +30,9 @@ class AppRepository(private val context: Context) {
 
     private var callback: LauncherApps.Callback? = null
 
+    /** Сповіщення про запуск додатка — щоб було кому рахувати частоту. */
+    var onLaunch: ((packageName: String, activityName: String) -> Unit)? = null
+
     fun start(scope: CoroutineScope) {
         scope.launch { refresh() }
         val cb = object : LauncherApps.Callback() {
@@ -75,6 +78,7 @@ class AppRepository(private val context: Context) {
     // -------------------------------------------------------------- дії
 
     fun launch(packageName: String, activityName: String, sourceBounds: Rect? = null) {
+        runCatching { onLaunch?.invoke(packageName, activityName) }
         val component = ComponentName(packageName, activityName)
         val opts = Bundle()
         val ok = runCatching {

@@ -97,6 +97,7 @@ fun AppRow(
     align: AlignMode,
     showIcon: Boolean,
     modifier: Modifier = Modifier,
+    showLabel: Boolean = true,
     trailing: (@Composable () -> Unit)? = null,
     icon: @Composable () -> Unit,
 ) {
@@ -105,31 +106,53 @@ fun AppRow(
         AlignMode.CENTER -> Arrangement.Center
         AlignMode.END -> Arrangement.End
     }
+    // Справжнє дзеркало ставить іконку до краю екрана, а назву від неї всередину.
+    // Самого лише Arrangement.End замало: він переносить пару, не міняючи її порядок.
+    val mirrored = align == AlignMode.END
 
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = arrangement,
     ) {
-        if (showIcon) {
-            Box(Modifier.size(iconSize), contentAlignment = Alignment.Center) { icon() }
-            Spacer(Modifier.width(iconGap))
+        // Вага потрібна з обох боків: без неї довга назва виштовхує іконку за екран.
+        val labelModifier = if (align == AlignMode.CENTER) {
+            Modifier
+        } else {
+            Modifier.weight(1f, fill = false)
         }
-        Text(
-            text = if (allCaps) label.uppercase() else label,
-            style = TextStyle(
-                color = labelColor,
-                fontSize = labelSizeSp.sp,
-                fontWeight = FontWeight(labelWeight.coerceIn(100, 900)),
-                shadow = Shadow(color = shadowColor, blurRadius = 6f),
-            ),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = if (align == AlignMode.START) Modifier.weight(1f, fill = false) else Modifier,
+        val labelStyle = TextStyle(
+            color = labelColor,
+            fontSize = labelSizeSp.sp,
+            fontWeight = FontWeight(labelWeight.coerceIn(100, 900)),
+            shadow = Shadow(color = shadowColor, blurRadius = 6f),
         )
-        if (trailing != null) {
-            Spacer(Modifier.width(8.dp))
-            trailing()
+        val text = if (allCaps) label.uppercase() else label
+
+        if (mirrored) {
+            if (trailing != null) {
+                trailing()
+                Spacer(Modifier.width(8.dp))
+            }
+            if (showLabel) {
+                Text(text, labelModifier, style = labelStyle, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (showIcon) Spacer(Modifier.width(iconGap))
+            }
+            if (showIcon) {
+                Box(Modifier.size(iconSize), contentAlignment = Alignment.Center) { icon() }
+            }
+        } else {
+            if (showIcon) {
+                Box(Modifier.size(iconSize), contentAlignment = Alignment.Center) { icon() }
+                if (showLabel) Spacer(Modifier.width(iconGap))
+            }
+            if (showLabel) {
+                Text(text, labelModifier, style = labelStyle, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            if (trailing != null) {
+                Spacer(Modifier.width(8.dp))
+                trailing()
+            }
         }
     }
 }

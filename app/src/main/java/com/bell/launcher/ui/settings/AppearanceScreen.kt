@@ -2,7 +2,9 @@ package com.bell.launcher.ui.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +36,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -111,6 +115,11 @@ fun AppearanceScreen(
     onIconPack: (String?) -> Unit,
     onIconScale: (Float) -> Unit,
     onIcons: (Boolean?) -> Unit,
+    onShowLabels: (Boolean) -> Unit,
+    onPlateAlpha: (Float) -> Unit,
+    onAddWallpaper: () -> Unit,
+    onDeleteWallpaper: (String) -> Unit,
+    onFindWallpapers: () -> Unit,
     onFindIconPacks: () -> Unit,
     onFont: (FontChoice) -> Unit,
     onClockSeparator: (String) -> Unit,
@@ -172,6 +181,10 @@ fun AppearanceScreen(
                         onWallpaper = onWallpaper,
                         onWallpaperDim = onWallpaperDim,
                         onSystemWallpaper = onSystemWallpaper,
+                        onPlateAlpha = onPlateAlpha,
+                        onAddWallpaper = onAddWallpaper,
+                        onDeleteWallpaper = onDeleteWallpaper,
+                        onFindWallpapers = onFindWallpapers,
                     )
 
                     AppearanceTab.ICONS -> IconsTab(
@@ -182,6 +195,7 @@ fun AppearanceScreen(
                         onIconPack = onIconPack,
                         onIconScale = onIconScale,
                         onIcons = onIcons,
+                        onShowLabels = onShowLabels,
                         onFindIconPacks = onFindIconPacks,
                     )
 
@@ -263,27 +277,49 @@ private fun HomePreview(
             )
             Spacer(Modifier.height(12.dp))
 
-            sampleApps.take(3).forEach { app ->
+            val showIcons = settings.showIconsOverride ?: layout.showIcons
+            val plate = parseColor(theme.manifest.colors.surface, Color.Black)
+                .copy(alpha = settings.plateAlpha)
+            val rows = sampleApps.take(3)
+
+            rows.forEachIndexed { index, app ->
+                val shape = RoundedCornerShape(
+                    topStart = if (index == 0) 12.dp else 0.dp,
+                    topEnd = if (index == 0) 12.dp else 0.dp,
+                    bottomStart = if (index == rows.size - 1) 12.dp else 0.dp,
+                    bottomEnd = if (index == rows.size - 1) 12.dp else 0.dp,
+                )
                 Row(
-                    Modifier.padding(vertical = 5.dp),
+                    Modifier
+                        .then(
+                            if (settings.plateAlpha > 0.01f) {
+                                Modifier.clip(shape).background(plate)
+                            } else {
+                                Modifier
+                            }
+                        )
+                        .padding(horizontal = if (settings.plateAlpha > 0.01f) 8.dp else 0.dp)
+                        .padding(vertical = 5.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    if (settings.showIconsOverride ?: layout.showIcons) {
+                    if (showIcons) {
                         AppIconImage(
                             packageName = app.packageName,
                             activityName = app.activityName,
                             size = (layout.iconSizeDp * settings.iconScale * 0.72f).dp,
                         )
-                        Spacer(Modifier.width((layout.iconGapDp * 0.7f).dp))
+                        if (settings.showLabels) Spacer(Modifier.width((layout.iconGapDp * 0.7f).dp))
                     }
-                    Text(
-                        app.label,
-                        color = labelColor,
-                        fontSize = (layout.labelSizeSp * 0.8f).sp,
-                        fontWeight = FontWeight(layout.labelWeight.coerceIn(100, 900)),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    if (settings.showLabels) {
+                        Text(
+                            app.label,
+                            color = labelColor,
+                            fontSize = (layout.labelSizeSp * 0.8f).sp,
+                            fontWeight = FontWeight(layout.labelWeight.coerceIn(100, 900)),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
             }
 
@@ -512,6 +548,10 @@ private fun BackgroundTab(
     onWallpaper: (String?) -> Unit,
     onWallpaperDim: (Float) -> Unit,
     onSystemWallpaper: () -> Unit,
+    onPlateAlpha: (Float) -> Unit,
+    onAddWallpaper: () -> Unit,
+    onDeleteWallpaper: (String) -> Unit,
+    onFindWallpapers: () -> Unit,
 ) {
     SectionLabel("Що показувати позаду списку")
     ChipRow(
@@ -523,10 +563,11 @@ private fun BackgroundTab(
     if (settings.backgroundMode == BackgroundMode.IMAGE) {
         Spacer(Modifier.height(12.dp))
         SectionLabel("Шпалери лаунчера")
+        var pendingDelete by remember { mutableStateOf<WallpaperItem?>(null) }
+
         if (wallpapers.isEmpty()) {
             Text(
-                "Покладіть зображення у папку проєкту app/src/main/assets/wallpapers " +
-                    "і зберіть APK — вони з'являться тут.",
+                "Поки порожньо. Додайте своє зображення кнопкою нижче.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
             )
@@ -541,9 +582,16 @@ private fun BackgroundTab(
                         selected = item.fileName == settings.wallpaperFile,
                         loadWallpaper = loadWallpaper,
                         onClick = { onWallpaper(item.fileName) },
+                        onLongClick = { if (item.removable) pendingDelete = item },
                     )
                 }
             }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Довгий тап на своєму зображенні — видалити. Вбудовані не видаляються.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            )
             Spacer(Modifier.height(8.dp))
             SliderRow(
                 title = "Затемнення",
@@ -552,7 +600,50 @@ private fun BackgroundTab(
                 onChange = onWallpaperDim,
             )
         }
+
+        pendingDelete?.let { item ->
+            AlertDialog(
+                onDismissRequest = { pendingDelete = null },
+                title = { Text("Видалити зображення?") },
+                text = { Text(item.title) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        onDeleteWallpaper(item.fileName)
+                        pendingDelete = null
+                    }) { Text("Видалити") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { pendingDelete = null }) { Text("Скасувати") }
+                },
+            )
+        }
     }
+
+    ActionRow(
+        title = "Додати шпалери з галереї",
+        subtitle = "Зображення копіюється в лаунчер і зменшується під екран",
+        onClick = onAddWallpaper,
+    )
+    ActionRow(
+        title = "Знайти шпалери в інтернеті",
+        subtitle = "Відкриє добірку в браузері — далі збережіть файл і додайте з галереї",
+        onClick = onFindWallpapers,
+    )
+
+    HorizontalDivider(Modifier.padding(vertical = 8.dp))
+    SectionLabel("Планка під списком")
+    Text(
+        "Напівпрозора підкладка під іконками й назвами — щоб текст читався " +
+            "на світлих шпалерах. Обгортає рядки з однаковим відступом з обох боків.",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+    )
+    SliderRow(
+        title = if (settings.plateAlpha < 0.01f) "Вимкнено" else "Щільність",
+        value = settings.plateAlpha,
+        range = 0f..0.8f,
+        onChange = onPlateAlpha,
+    )
 
     HorizontalDivider(Modifier.padding(vertical = 8.dp))
     ActionRow(
@@ -562,12 +653,14 @@ private fun BackgroundTab(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun WallpaperThumb(
     item: WallpaperItem,
     selected: Boolean,
     loadWallpaper: (String, Int) -> ImageBitmap?,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
 ) {
     val bitmap by produceState<ImageBitmap?>(null, item.fileName) {
         value = withContext(Dispatchers.IO) { loadWallpaper(item.fileName, 320) }
@@ -584,7 +677,7 @@ private fun WallpaperThumb(
                 else MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(14.dp),
             )
-            .clickable(onClick = onClick),
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
     ) {
         bitmap?.let {
             Image(
@@ -606,6 +699,7 @@ private fun IconsTab(
     onIconPack: (String?) -> Unit,
     onIconScale: (Float) -> Unit,
     onIcons: (Boolean?) -> Unit,
+    onShowLabels: (Boolean) -> Unit,
     onFindIconPacks: () -> Unit,
 ) {
     SectionLabel("Стиль іконок")
@@ -661,10 +755,21 @@ private fun IconsTab(
         range = 0.7f..1.5f,
         onChange = onIconScale,
     )
+    val iconsOn = settings.showIconsOverride ?: true
     SwitchRow(
         title = "Показувати іконки",
-        checked = settings.showIconsOverride ?: true,
+        checked = iconsOn,
+        // Вимкнути можна щось одне: без іконок і без назв рядок стає порожнім,
+        // і повернути все назад буде нічим.
+        enabled = iconsOn || settings.showLabels,
         onChange = { onIcons(it) },
+    )
+    SwitchRow(
+        title = "Показувати назви",
+        checked = settings.showLabels,
+        enabled = settings.showLabels || iconsOn,
+        subtitle = "У шухляді пошуку назви лишаються завжди",
+        onChange = onShowLabels,
     )
 }
 
@@ -865,12 +970,32 @@ private fun SliderRow(
 }
 
 @Composable
-private fun SwitchRow(title: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+private fun SwitchRow(
+    title: String,
+    checked: Boolean,
+    onChange: (Boolean) -> Unit,
+    enabled: Boolean = true,
+    subtitle: String? = null,
+) {
     Row(
         Modifier.fillMaxWidth().padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-        Switch(checked = checked, onCheckedChange = onChange)
+        Column(Modifier.weight(1f)) {
+            Text(
+                title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground
+                    .copy(alpha = if (enabled) 1f else 0.4f),
+            )
+            if (subtitle != null) {
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                )
+            }
+        }
+        Switch(checked = checked, onCheckedChange = onChange, enabled = enabled)
     }
 }

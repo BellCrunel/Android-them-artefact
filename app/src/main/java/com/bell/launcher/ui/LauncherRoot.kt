@@ -46,8 +46,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.bell.launcher.data.BackgroundMode
 import com.bell.launcher.data.GestureAction
@@ -83,12 +83,14 @@ fun LauncherRoot(
     viewModel: LauncherViewModel,
     onImportTheme: () -> Unit,
     onRequestLocationPermission: () -> Unit,
+    onPickWallpaper: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
     val overlay by viewModel.overlay.collectAsState()
     val weather by viewModel.weather.collectAsState()
     val weatherStatus by viewModel.weatherStatus.collectAsState()
     val notifications by viewModel.notifications.collectAsState()
+    val usageScores by viewModel.usageScores.collectAsState()
     // Перечитуємо текст щоразу, коли змінюється стан або самі дані погоди.
     val weatherStatusText = remember(weatherStatus, weather) { viewModel.weatherText() }
 
@@ -111,9 +113,23 @@ fun LauncherRoot(
 
     val folders = state.layout.sorted.filterIsInstance<FolderEntry>()
     val iconPacks = remember { viewModel.installedIconPacks() }
-    val railWidthPx = with(LocalDensity.current) { RAIL_WIDTH.toPx() }
     // Видимий список сам повідомляє, чи є куди гортати.
     val homeScroll = remember { HomeScrollState() }
+
+    // Робоча смуга жесту: половина екрана, протилежна колонці з додатками,
+    // мінус край зі смугою алфавіту. Над рядками палець гортає список — там
+    // жест мовчить, інакше продовження прокрутки відкривало б пошук.
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val railFraction = (RAIL_WIDTH / screenWidth).coerceIn(0f, 0.4f)
+    val bandStart: Float
+    val bandEnd: Float
+    if (state.settings.mirrored) {
+        bandStart = railFraction
+        bandEnd = 0.5f
+    } else {
+        bandStart = 0.5f
+        bandEnd = 1f - railFraction
+    }
 
     fun launch(ref: AppRef) {
         viewModel.appRepository.launch(ref.packageName, ref.activityName)
@@ -188,6 +204,7 @@ fun LauncherRoot(
                 listState = listState,
                 scrollState = homeScroll,
                 notifications = notifications,
+                usageScores = usageScores,
                 onLaunch = ::launch,
                 onAction = ::handleRowAction,
                 onFolderAppRemove = { folderId, ref -> viewModel.removeFromFolder(folderId, ref) },
@@ -210,9 +227,8 @@ fun LauncherRoot(
                     onTwoFingerSwipeDown = {
                         if (overlay == Overlay.NONE) runAction(state.settings.twoFingerSwipeDown)
                     },
-                    // Обидва бічні краї — зони під палець: там жести лаунчера мовчать.
-                    excludeRightPx = railWidthPx,
-                    excludeLeftPx = railWidthPx,
+                    bandStart = bandStart,
+                    bandEnd = bandEnd,
                 ),
             )
 
@@ -265,7 +281,8 @@ fun LauncherRoot(
                     onOpenHidden = { viewModel.openOverlay(Overlay.HIDDEN_APPS) },
                     onOpenFavorites = { viewModel.openOverlay(Overlay.FAVORITES) },
                     onAddWidget = { viewModel.closeOverlay(); addWidget() },
-                    onRailSide = { viewModel.setRailOnLeft(it) },
+                    onMirrored = { viewModel.setMirrored(it) },
+                    onHomeOrder = { viewModel.setHomeOrder(it) },
                     onRailFeedback = { viewModel.setRailFeedback(it) },
                     onGesture = { slot, action -> viewModel.setGesture(slot, action) },
                     onWeatherEnabled = { viewModel.setWeatherEnabled(it) },
@@ -280,7 +297,10 @@ fun LauncherRoot(
             }
 
             AnimatedVisibility(visible = overlay == Overlay.APPEARANCE, enter = fadeIn(), exit = fadeOut()) {
-                val wallpapers = remember { viewModel.wallpapers() }
+                // Версія міняється після додавання чи видалення — інакше
+                // список лишався б тим, що прочитали при першому відкритті.
+                val wallpaperVersion by viewModel.wallpaperVersion.collectAsState()
+                val wallpapers = remember(wallpaperVersion) { viewModel.wallpapers() }
                 AppearanceScreen(
                     settings = state.settings,
                     themes = state.themes,
@@ -296,10 +316,15 @@ fun LauncherRoot(
                     onWallpaper = { viewModel.setWallpaper(it) },
                     onWallpaperDim = { viewModel.setWallpaperDim(it) },
                     onSystemWallpaper = { pickWallpaper(context) },
+                    onAddWallpaper = onPickWallpaper,
+                    onDeleteWallpaper = { viewModel.deleteWallpaper(it) },
+                    onFindWallpapers = { viewModel.openWallpaperSearch() },
                     onIconStyle = { viewModel.setIconStyle(it) },
                     onIconPack = { viewModel.setIconPack(it) },
                     onIconScale = { viewModel.setIconScale(it) },
                     onIcons = { viewModel.setIconsOverride(it) },
+                    onShowLabels = { viewModel.setShowLabels(it) },
+                    onPlateAlpha = { viewModel.setPlateAlpha(it) },
                     onFindIconPacks = { viewModel.openIconPackSearch() },
                     onFont = { viewModel.setFont(it) },
                     onClockSeparator = { viewModel.setClockSeparator(it) },

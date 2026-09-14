@@ -1,9 +1,13 @@
 package com.bell.launcher.ui.home
 
 import android.widget.FrameLayout
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -14,10 +18,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +35,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,13 +43,26 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.bell.launcher.data.AppNotification
+import com.bell.launcher.data.HomeOrder
+import com.bell.launcher.data.LauncherSettings
 import com.bell.launcher.data.Weather
 import com.bell.launcher.data.model.AppEntry
 import com.bell.launcher.data.model.AppInfo
@@ -52,6 +71,7 @@ import com.bell.launcher.data.model.FolderEntry
 import com.bell.launcher.data.model.HomeEntry
 import com.bell.launcher.data.model.WidgetEntry
 import com.bell.launcher.theme.LocalLauncherTheme
+import com.bell.launcher.theme.model.AlignMode
 import com.bell.launcher.theme.parseColor
 import com.bell.launcher.ui.LauncherUiState
 import com.bell.launcher.ui.components.AppIconImage
@@ -63,6 +83,13 @@ import com.bell.launcher.ui.components.NotificationDot
 import com.bell.launcher.ui.components.SwipeableRow
 import com.bell.launcher.ui.widget.LocalWidgetController
 import com.bell.launcher.util.IndexLetters
+
+/** Внутрішній відступ планки під списком — однаковий з обох боків. */
+private val PLATE_PAD = 14.dp
+private val PLATE_CORNER = 20.dp
+
+/** Висота, на якій рядки розчиняються, входячи під прибитий годинник. */
+private val FADE_HEIGHT = 52.dp
 
 /**
  * Чи може зараз гортатися видимий список.
@@ -81,6 +108,31 @@ class HomeScrollState {
     }
 }
 
+/**
+ * Усе, що залежить від сторони екрана, зібрано в одному місці.
+ * Дзеркало перевертає розкладку цілком, тож кожен елемент має питати сторону
+ * тут, а не рахувати її самостійно — інакше при наступній правці одне місце
+ * оновлять, а друге забудуть.
+ */
+@Stable
+private data class SideLayout(
+    val mirrored: Boolean,
+    val rowAlign: AlignMode,
+    val headerAlign: AlignMode,
+) {
+    /** Смуга алфавіту. */
+    val railAlignment: Alignment.Horizontal
+        get() = if (mirrored) Alignment.Start else Alignment.End
+
+    /** Показник літери стоїть навпроти годинника, з протилежного краю. */
+    val indicatorAlignment: Alignment
+        get() = if (headerAlign == AlignMode.END) Alignment.TopStart else Alignment.TopEnd
+
+    /** Відступ списку під смугу алфавіту. */
+    fun listPadding(rail: Dp): PaddingValues =
+        if (mirrored) PaddingValues(start = rail) else PaddingValues(end = rail)
+}
+
 @Composable
 fun HomeScreen(
     state: LauncherUiState,
@@ -88,6 +140,7 @@ fun HomeScreen(
     listState: LazyListState,
     scrollState: HomeScrollState,
     notifications: Map<String, AppNotification>,
+    usageScores: Map<String, Float>,
     onLaunch: (AppRef) -> Unit,
     onAction: (HomeEntry, HomeRowAction) -> Unit,
     onFolderAppRemove: (String, AppRef) -> Unit,
@@ -98,8 +151,18 @@ fun HomeScreen(
 ) {
     val theme = LocalLauncherTheme.current
     val spec = theme.manifest.layout
+    val header = theme.manifest.header
     val labelColor = parseColor(theme.manifest.colors.homeLabel, Color.White)
     val padH = spec.horizontalPaddingDp.dp
+
+    val mirrored = state.settings.mirrored
+    val side = remember(mirrored, spec.align, header.align) {
+        SideLayout(
+            mirrored = mirrored,
+            rowAlign = mirror(spec.align, mirrored),
+            headerAlign = mirror(header.align, mirrored),
+        )
+    }
 
     // Групування всіх додатків за літерою покажчика (кирилиця → латиниця).
     val grouped = remember(state.apps, state.settings.hiddenApps) {
@@ -113,14 +176,18 @@ fun HomeScreen(
     }
 
     var activeLetter by remember { mutableStateOf<String?>(null) }
+    var railDragging by remember { mutableStateOf(false) }
 
-    val railLeft = state.settings.railOnLeft
-    // Смуга алфавіту з'їдає свій край — текст рядків туди не заходить.
-    val listPadding = if (railLeft) {
-        PaddingValues(start = 72.dp)
-    } else {
-        PaddingValues(end = 72.dp)
-    }
+    // Висоту прибитого заголовка міряємо, а не рахуємо з теми: масштаб шрифта
+    // в системних налаштуваннях зсуває її на десятки пікселів.
+    var headerHeightPx by remember { mutableIntStateOf(0) }
+    val density = LocalDensity.current
+    val headerHeight = with(density) { headerHeightPx.toDp() }
+    val fadePx = with(density) { FADE_HEIGHT.toPx() }
+
+    val plateColor = parseColor(theme.manifest.colors.surface, Color.Black)
+        .copy(alpha = state.settings.plateAlpha)
+    val plateOn = state.settings.plateAlpha > 0.01f
 
     Box(modifier.fillMaxSize()) {
 
@@ -133,15 +200,36 @@ fun HomeScreen(
             targetState = letterMode,
             animationSpec = tween(140),
             label = "homeMode",
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                // Маска, а не підкладка кольором: підкладка сховала б шпалери.
+                // Offscreen обов'язковий, інакше DstIn з'їсть усе, що намальовано
+                // нижче по дереву, разом зі шпалерами.
+                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+                .drawWithContent {
+                    drawContent()
+                    if (headerHeightPx > 0) {
+                        drawRect(
+                            brush = Brush.verticalGradient(
+                                listOf(Color.Transparent, Color.Black),
+                                startY = (headerHeightPx - fadePx).coerceAtLeast(0f),
+                                endY = headerHeightPx.toFloat().coerceAtLeast(1f),
+                            ),
+                            blendMode = BlendMode.DstIn,
+                        )
+                    }
+                },
         ) { inLetterMode ->
             if (!inLetterMode) {
                 FavoritesList(
                     state = state,
-                    weather = weather,
                     listState = listState,
                     scrollState = scrollState,
-                    contentPadding = listPadding,
+                    side = side,
+                    usageScores = usageScores,
+                    topInset = headerHeight,
+                    plateColor = plateColor,
+                    plateOn = plateOn,
                     notifications = notifications,
                     padH = padH,
                     onLaunch = onLaunch,
@@ -157,7 +245,11 @@ fun HomeScreen(
                     letter = letter,
                     apps = grouped[letter].orEmpty(),
                     scrollState = scrollState,
-                    railLeft = railLeft,
+                    side = side,
+                    settings = state.settings,
+                    topInset = headerHeight,
+                    plateColor = plateColor,
+                    plateOn = plateOn,
                     notifications = notifications,
                     padH = padH,
                     labelColor = labelColor,
@@ -169,40 +261,75 @@ fun HomeScreen(
             }
         }
 
+        // Прибитий заголовок. Малюється ПІСЛЯ списку, тож рядки їдуть під нього.
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .systemBarsPadding()
+                .onGloballyPositioned { headerHeightPx = it.size.height }
+                .pointerInput(Unit) { detectTapGestures(onLongPress = { onLongPressEmpty() }) }
+                .padding(horizontal = padH),
+        ) {
+            ClockHeader(weather = weather, align = side.headerAlign)
+        }
+
+        // Показник поточної літери — навпроти годинника, далеко від долоні.
+        LetterIndicator(
+            letter = activeLetter,
+            visible = railDragging && activeLetter != null,
+            topOffset = indicatorTop(header.paddingTopDp, header.clockSizeSp),
+            modifier = Modifier.align(side.indicatorAlignment).systemBarsPadding(),
+        )
+
         LetterRail(
             letters = letters,
             active = activeLetter,
             color = parseColor(theme.manifest.colors.scrubber, Color.White),
-            bubbleColor = parseColor(theme.manifest.colors.surface, Color.DarkGray)
-                .copy(alpha = 0.92f),
-            bubbleTextColor = parseColor(theme.manifest.colors.onSurface, Color.White),
             onActiveChange = { activeLetter = it },
             onRelease = { /* лишаємо літеру, щоб можна було натиснути додаток */ },
-            onLeft = railLeft,
+            onDraggingChange = { railDragging = it },
+            onLeft = side.mirrored,
             feedback = state.settings.railFeedback,
             modifier = Modifier
-                .align(if (railLeft) Alignment.BottomStart else Alignment.BottomEnd)
+                .align(
+                    if (side.mirrored) Alignment.BottomStart else Alignment.BottomEnd
+                )
                 .systemBarsPadding()
                 .padding(
-                    start = if (railLeft) 2.dp else 0.dp,
-                    end = if (railLeft) 0.dp else 2.dp,
+                    start = if (side.mirrored) 2.dp else 0.dp,
+                    end = if (side.mirrored) 0.dp else 2.dp,
                     bottom = 64.dp,
                 ),
         )
     }
 }
 
+/** Дзеркалить вирівнювання. Центр дзеркальний сам до себе — його не чіпаємо. */
+private fun mirror(align: AlignMode, mirrored: Boolean): AlignMode = when {
+    align == AlignMode.CENTER -> AlignMode.CENTER
+    !mirrored -> align
+    align == AlignMode.START -> AlignMode.END
+    else -> AlignMode.START
+}
+
+/** Вертикальна позиція показника — по центру цифр годинника. */
+private fun indicatorTop(paddingTopDp: Int, clockSizeSp: Float): Dp =
+    (paddingTopDp + clockSizeSp * 0.6f - 32f).coerceAtLeast(0f).dp
+
 // ------------------------------------------------------------ обрані додатки
 
 @Composable
 private fun FavoritesList(
     state: LauncherUiState,
-    weather: Weather?,
     listState: LazyListState,
     scrollState: HomeScrollState,
-    contentPadding: PaddingValues,
+    side: SideLayout,
+    usageScores: Map<String, Float>,
+    topInset: Dp,
+    plateColor: Color,
+    plateOn: Boolean,
     notifications: Map<String, AppNotification>,
-    padH: androidx.compose.ui.unit.Dp,
+    padH: Dp,
     onLaunch: (AppRef) -> Unit,
     onAction: (HomeEntry, HomeRowAction) -> Unit,
     onFolderAppRemove: (String, AppRef) -> Unit,
@@ -212,15 +339,35 @@ private fun FavoritesList(
 ) {
     val theme = LocalLauncherTheme.current
     val spec = theme.manifest.layout
-    val entries = state.layout.sorted
     val expanded = rememberExpandedFolders()
+
+    val order = state.settings.homeOrder
+    val entries = remember(state.layout.sorted, order, usageScores) {
+        reorder(state.layout.sorted, order, usageScores)
+    }
+
+    val showIcons = LocalIconsOverride.current ?: spec.showIcons
+    val showLabels = state.settings.showLabels
+    val iconSize = spec.iconSizeDp.dp * LocalIconScale.current
+
+    val plateWidth = rememberPlateWidth(
+        labels = entries.map { entryLabel(it) },
+        showIcons = showIcons,
+        showLabels = showLabels,
+        iconSize = iconSize,
+        iconGap = spec.iconGapDp.dp,
+        labelSizeSp = spec.labelSizeSp,
+        labelWeight = spec.labelWeight,
+        enabled = plateOn,
+    )
+    val plateMargin = (padH - PLATE_PAD).coerceAtLeast(0.dp)
 
     val emptyAreaModifier = Modifier.pointerInput(Unit) {
         detectTapGestures(onLongPress = { onLongPressEmpty() })
     }
 
     // Головний екран за замовчуванням не гортається: інакше свайп угору
-    // (жест відкриття пошуку) піднімав би годинник у самий верх.
+    // (жест відкриття пошуку) піднімав би список без потреби.
     // Але якщо обраних більше, ніж влазить у екран, гортання вмикається —
     // інакше до нижніх додатків просто не дістатися.
     var overflows by remember(entries.size) { mutableStateOf(false) }
@@ -235,7 +382,6 @@ private fun FavoritesList(
         }
     }
 
-    // Поки список не гортається, жести лаунчера мають працювати як раніше.
     LaunchedEffect(overflows) { if (!overflows) scrollState.reset() }
     LaunchedEffect(overflows, listState) {
         if (!overflows) return@LaunchedEffect
@@ -249,20 +395,19 @@ private fun FavoritesList(
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize().systemBarsPadding(),
-        contentPadding = contentPadding,
+        contentPadding = side.listPadding(RAIL_WIDTH),
         userScrollEnabled = overflows,
     ) {
-        item(key = "__header__") {
-            Box(emptyAreaModifier.fillMaxWidth().padding(horizontal = padH)) {
-                ClockHeader(weather = weather)
-            }
+        item(key = "__top__") {
+            // Місце під прибитий годинник: він більше не елемент списку.
+            Box(emptyAreaModifier.fillMaxWidth().height(topInset))
         }
 
         if (entries.isEmpty()) {
             item(key = "__empty__") {
                 Column(emptyAreaModifier.fillMaxWidth().padding(horizontal = padH)) {
                     Text(
-                        text = "Порожньо. Проведіть пальцем по алфавіту справа,\n" +
+                        text = "Порожньо. Проведіть пальцем по алфавіту,\n" +
                             "або довгий тап → Налаштування → Обрані додатки.",
                         color = parseColor(theme.manifest.colors.homeLabel, Color.White)
                             .copy(alpha = 0.7f),
@@ -272,31 +417,48 @@ private fun FavoritesList(
         }
 
         itemsIndexed(entries, key = { _, entry -> entry.id }) { index, entry ->
-            Column(Modifier.fillMaxWidth().padding(horizontal = padH)) {
-                HomeRow(
-                    entry = entry,
-                    index = index,
-                    total = entries.size,
-                    isExpanded = entry.id in expanded,
-                    notification = (entry as? AppEntry)?.let { notifications[it.app.packageName] },
-                    onLaunch = onLaunch,
-                    onToggleFolder = {
-                        if (entry.id in expanded) expanded.remove(entry.id) else expanded.add(entry.id)
-                    },
-                    onAction = onAction,
-                    onOpenNotification = onOpenNotification,
-                    onDismissNotification = onDismissNotification,
-                )
-
-                if (entry is FolderEntry && entry.id in expanded) {
-                    FolderChildren(
-                        folder = entry,
+            PlateSegment(
+                plateColor = plateColor,
+                // Віджет малюється на всю ширину — заганяти його в планку,
+                // розраховану по довжині назв, безглуздо.
+                plateWidth = if (entry is WidgetEntry) null else plateWidth,
+                plateMargin = plateMargin,
+                side = side,
+                first = index == 0,
+                last = index == entries.size - 1,
+                fallbackPadding = padH,
+            ) {
+                Column(Modifier.fillMaxWidth()) {
+                    HomeRow(
+                        entry = entry,
+                        index = index,
+                        total = entries.size,
+                        align = side.rowAlign,
+                        showLabels = showLabels,
+                        manualOrder = order == HomeOrder.MANUAL,
+                        isExpanded = entry.id in expanded,
+                        notification = (entry as? AppEntry)?.let { notifications[it.app.packageName] },
                         onLaunch = onLaunch,
-                        onRemove = { ref -> onFolderAppRemove(entry.id, ref) },
+                        onToggleFolder = {
+                            if (entry.id in expanded) expanded.remove(entry.id) else expanded.add(entry.id)
+                        },
+                        onAction = onAction,
+                        onOpenNotification = onOpenNotification,
+                        onDismissNotification = onDismissNotification,
                     )
-                }
 
-                Spacer(Modifier.height(spec.rowSpacingDp.dp))
+                    if (entry is FolderEntry && entry.id in expanded) {
+                        FolderChildren(
+                            folder = entry,
+                            align = side.rowAlign,
+                            showLabels = showLabels,
+                            onLaunch = onLaunch,
+                            onRemove = { ref -> onFolderAppRemove(entry.id, ref) },
+                        )
+                    }
+
+                    Spacer(Modifier.height(spec.rowSpacingDp.dp))
+                }
             }
         }
 
@@ -308,6 +470,41 @@ private fun FavoritesList(
     }
 }
 
+/**
+ * Порядок рядків. Додатки пересортовуються **на своїх місцях**: віджети й папки
+ * лишаються там, куди їх поставив користувач, інакше віджет-годинник поїхав би
+ * в кінець списку при першому ж перемиканні режиму.
+ */
+private fun reorder(
+    entries: List<HomeEntry>,
+    order: HomeOrder,
+    scores: Map<String, Float>,
+): List<HomeEntry> {
+    if (order == HomeOrder.MANUAL) return entries
+    val slots = entries.indices.filter { entries[it] is AppEntry }
+    if (slots.size < 2) return entries
+
+    val apps = slots.map { entries[it] as AppEntry }
+    val sorted = when (order) {
+        HomeOrder.FREQUENCY -> apps.sortedWith(
+            compareByDescending<AppEntry> { scores[it.app.key] ?: 0f }
+                .thenBy { it.label.lowercase() }
+        )
+        HomeOrder.ALPHABET -> apps.sortedBy { it.label.lowercase() }
+        HomeOrder.MANUAL -> apps
+    }
+
+    val result = entries.toMutableList()
+    slots.forEachIndexed { i, slot -> result[slot] = sorted[i] }
+    return result
+}
+
+private fun entryLabel(entry: HomeEntry): String = when (entry) {
+    is AppEntry -> entry.label
+    is FolderEntry -> entry.name
+    else -> ""
+}
+
 // -------------------------------------------------- список однієї літери
 
 @Composable
@@ -315,9 +512,13 @@ private fun LetterList(
     letter: String,
     apps: List<AppInfo>,
     scrollState: HomeScrollState,
-    railLeft: Boolean,
+    side: SideLayout,
+    settings: LauncherSettings,
+    topInset: Dp,
+    plateColor: Color,
+    plateOn: Boolean,
     notifications: Map<String, AppNotification>,
-    padH: androidx.compose.ui.unit.Dp,
+    padH: Dp,
     labelColor: Color,
     onLaunch: (AppInfo) -> Unit,
     onOpenNotification: (String) -> Unit,
@@ -328,15 +529,27 @@ private fun LetterList(
     val spec = theme.manifest.layout
     val iconSize = spec.iconSizeDp.dp * LocalIconScale.current
     val showIcons = LocalIconsOverride.current ?: spec.showIcons
+    val showLabels = settings.showLabels
     val shadow = parseColor(theme.manifest.colors.labelShadow, Color.Transparent)
     val listState = rememberLazyListState()
+
+    val plateWidth = rememberPlateWidth(
+        labels = apps.map { it.label },
+        showIcons = showIcons,
+        showLabels = showLabels,
+        iconSize = iconSize,
+        iconGap = spec.iconGapDp.dp,
+        labelSizeSp = spec.labelSizeSp,
+        labelWeight = spec.labelWeight,
+        enabled = plateOn,
+    )
+    val plateMargin = (padH - PLATE_PAD).coerceAtLeast(0.dp)
 
     // Нова літера — список починається згори, без анімації прокрутки
     LaunchedEffect(letter) { listState.scrollToItem(0) }
 
     // Повідомляємо назовні, чи є куди гортати: поки є, свайп угору гортає
-    // список, а не відкриває пошук. Раніше довгий список на одну літеру
-    // прогорнути було неможливо — жест перехоплював лаунчер.
+    // список, а не відкриває пошук.
     DisposableEffect(Unit) { onDispose { scrollState.reset() } }
     LaunchedEffect(listState) {
         snapshotFlow { listState.canScrollForward to listState.canScrollBackward }
@@ -354,24 +567,33 @@ private fun LetterList(
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize().systemBarsPadding(),
-            contentPadding = PaddingValues(
-                top = 150.dp,
-                bottom = 80.dp,
-                start = if (railLeft) 72.dp else 0.dp,
-                end = if (railLeft) 0.dp else 72.dp,
-            ),
+            contentPadding = side.listPadding(RAIL_WIDTH),
         ) {
-            item(key = "__letter__") {
-                Text(
-                    text = letter,
-                    color = labelColor.copy(alpha = 0.55f),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(start = padH, bottom = 6.dp),
-                )
+            item(key = "__top__") {
+                Box(Modifier.fillMaxWidth().height(topInset))
             }
 
-            items(apps, key = { it.key }) { app ->
+            item(key = "__letter__") {
+                Box(Modifier.fillMaxWidth().padding(horizontal = padH)) {
+                    Text(
+                        text = letter,
+                        color = labelColor.copy(alpha = 0.55f),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .align(
+                                if (side.rowAlign == AlignMode.END) {
+                                    Alignment.CenterEnd
+                                } else {
+                                    Alignment.CenterStart
+                                }
+                            )
+                            .padding(bottom = 6.dp),
+                    )
+                }
+            }
+
+            itemsIndexed(apps, key = { _, app -> app.key }) { index, app ->
                 val notification = notifications[app.packageName]
                 val trailing: (@Composable () -> Unit)? = if (notification != null) {
                     {
@@ -384,7 +606,15 @@ private fun LetterList(
                 } else {
                     null
                 }
-                Box(Modifier.padding(horizontal = padH)) {
+                PlateSegment(
+                    plateColor = plateColor,
+                    plateWidth = plateWidth,
+                    plateMargin = plateMargin,
+                    side = side,
+                    first = index == 0,
+                    last = index == apps.size - 1,
+                    fallbackPadding = padH,
+                ) {
                     SwipeableRow(
                         enabled = notification != null,
                         onSwipeRight = { onOpenNotification(app.packageName) },
@@ -400,8 +630,9 @@ private fun LetterList(
                             labelSizeSp = spec.labelSizeSp,
                             labelWeight = spec.labelWeight,
                             allCaps = theme.manifest.typography.allCaps,
-                            align = spec.align,
+                            align = side.rowAlign,
                             showIcon = showIcons,
+                            showLabel = showLabels,
                             modifier = Modifier
                                 .padding(vertical = (spec.rowSpacingDp / 2).dp)
                                 .pointerInput(app.key) {
@@ -424,6 +655,130 @@ private fun LetterList(
                     )
                 }
             }
+
+            item(key = "__bottom__") { Box(Modifier.height(80.dp)) }
+        }
+    }
+}
+
+// ------------------------------------------------------------------ планка
+
+/**
+ * Ширина вмісту найширшого рядка.
+ *
+ * Міряємо ВСІ назви одразу через [rememberTextMeasurer], а не беремо ширину
+ * з розкладки: `LazyColumn` компонує лише видимі рядки, тож при гортанні
+ * до довшої назви планка стрибала б ушир.
+ */
+@Composable
+private fun rememberPlateWidth(
+    labels: List<String>,
+    showIcons: Boolean,
+    showLabels: Boolean,
+    iconSize: Dp,
+    iconGap: Dp,
+    labelSizeSp: Float,
+    labelWeight: Int,
+    enabled: Boolean,
+): Dp? {
+    // Усі remember викликаються безумовно: composable не можна пропускати
+    // за if, інакше при вмиканні планки Compose втратить слоти й упаде.
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val style = remember(labelSizeSp, labelWeight) {
+        TextStyle(
+            fontSize = labelSizeSp.sp,
+            fontWeight = FontWeight(labelWeight.coerceIn(100, 900)),
+        )
+    }
+    val width = remember(labels, showIcons, showLabels, iconSize, iconGap, style, screenWidth) {
+        with(density) {
+            var content = 0.dp
+            if (showIcons) content += iconSize
+            if (showLabels && labels.isNotEmpty()) {
+                val widest = labels.maxOf { measurer.measure(it, style).size.width }.toDp()
+                if (showIcons) content += iconGap
+                content += widest
+            }
+            // Довгі назви й так обрізаються трикрапкою — планка через пів екрана
+            // виглядала б безглуздо.
+            PLATE_PAD * 2 + content.coerceAtMost(screenWidth * 0.75f)
+        }
+    }
+    return if (enabled) width else null
+}
+
+/**
+ * Один сегмент планки під рядком. Сегменти стикаються впритул, тож виглядають
+ * як одна суцільна смуга; скруглення — лише на самих краях списку.
+ */
+@Composable
+private fun PlateSegment(
+    plateColor: Color,
+    plateWidth: Dp?,
+    plateMargin: Dp,
+    side: SideLayout,
+    first: Boolean,
+    last: Boolean,
+    fallbackPadding: Dp,
+    content: @Composable () -> Unit,
+) {
+    if (plateWidth == null) {
+        Box(Modifier.fillMaxWidth().padding(horizontal = fallbackPadding)) { content() }
+        return
+    }
+    val shape = RoundedCornerShape(
+        topStart = if (first) PLATE_CORNER else 0.dp,
+        topEnd = if (first) PLATE_CORNER else 0.dp,
+        bottomStart = if (last) PLATE_CORNER else 0.dp,
+        bottomEnd = if (last) PLATE_CORNER else 0.dp,
+    )
+    Box(
+        Modifier.fillMaxWidth().padding(horizontal = plateMargin),
+        contentAlignment = if (side.mirrored) Alignment.CenterEnd else Alignment.CenterStart,
+    ) {
+        Box(
+            Modifier
+                .width(plateWidth)
+                .clip(shape)
+                .background(plateColor)
+                .padding(horizontal = PLATE_PAD),
+        ) {
+            content()
+        }
+    }
+}
+
+// ------------------------------------------------------------- показник літери
+
+@Composable
+private fun LetterIndicator(
+    letter: String?,
+    visible: Boolean,
+    topOffset: Dp,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedVisibility(
+        visible = visible && letter != null,
+        enter = fadeIn(animationSpec = tween(120)),
+        exit = fadeOut(animationSpec = tween(120)),
+        modifier = modifier.padding(top = topOffset, start = 16.dp, end = 16.dp),
+    ) {
+        Box(
+            Modifier
+                .size(64.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = letter.orEmpty(),
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 34.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+            )
         }
     }
 }
@@ -436,6 +791,9 @@ private fun HomeRow(
     entry: HomeEntry,
     index: Int,
     total: Int,
+    align: AlignMode,
+    showLabels: Boolean,
+    manualOrder: Boolean,
     isExpanded: Boolean,
     notification: AppNotification?,
     onLaunch: (AppRef) -> Unit,
@@ -482,8 +840,9 @@ private fun HomeRow(
                     labelSizeSp = spec.labelSizeSp,
                     labelWeight = spec.labelWeight,
                     allCaps = theme.manifest.typography.allCaps,
-                    align = spec.align,
+                    align = align,
                     showIcon = showIcons,
+                    showLabel = showLabels,
                     modifier = Modifier
                         .padding(vertical = 6.dp)
                         .combinedClickable(
@@ -505,8 +864,9 @@ private fun HomeRow(
                 labelSizeSp = spec.labelSizeSp,
                 labelWeight = spec.labelWeight,
                 allCaps = theme.manifest.typography.allCaps,
-                align = spec.align,
+                align = align,
                 showIcon = showIcons,
+                showLabel = showLabels,
                 modifier = Modifier
                     .padding(vertical = 6.dp)
                     .combinedClickable(
@@ -533,8 +893,10 @@ private fun HomeRow(
         DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
             HomeRowAction.entries.forEach { action ->
                 val visible = when (action) {
-                    HomeRowAction.MOVE_UP -> index > 0
-                    HomeRowAction.MOVE_DOWN -> index < total - 1
+                    // У режимі сортування пункти переміщення нічого не роблять —
+                    // ховаємо їх, щоб не виглядали зламаними.
+                    HomeRowAction.MOVE_UP -> manualOrder && index > 0
+                    HomeRowAction.MOVE_DOWN -> manualOrder && index < total - 1
                     HomeRowAction.MAKE_FOLDER -> entry is AppEntry
                     HomeRowAction.RENAME -> entry !is WidgetEntry
                     HomeRowAction.APP_INFO -> entry is AppEntry
@@ -584,6 +946,8 @@ private fun WidgetRow(entry: WidgetEntry, onLongClick: () -> Unit) {
 @Composable
 private fun FolderChildren(
     folder: FolderEntry,
+    align: AlignMode,
+    showLabels: Boolean,
     onLaunch: (AppRef) -> Unit,
     onRemove: (AppRef) -> Unit,
 ) {
@@ -594,7 +958,13 @@ private fun FolderChildren(
     val labelColor = parseColor(theme.manifest.colors.homeLabel, Color.White).copy(alpha = 0.9f)
     val shadow = parseColor(theme.manifest.colors.labelShadow, Color.Transparent)
 
-    Column(Modifier.padding(start = 24.dp, top = 4.dp)) {
+    val inset = if (align == AlignMode.END) {
+        Modifier.padding(end = 24.dp, top = 4.dp)
+    } else {
+        Modifier.padding(start = 24.dp, top = 4.dp)
+    }
+
+    Column(inset) {
         folder.apps.forEach { ref ->
             var menu by remember(ref.key) { mutableStateOf(false) }
             Box {
@@ -607,8 +977,9 @@ private fun FolderChildren(
                     labelSizeSp = spec.labelSizeSp * 0.92f,
                     labelWeight = spec.labelWeight,
                     allCaps = theme.manifest.typography.allCaps,
-                    align = spec.align,
+                    align = align,
                     showIcon = showIcons,
+                    showLabel = showLabels,
                     modifier = Modifier
                         .padding(vertical = 5.dp)
                         .combinedClickable(

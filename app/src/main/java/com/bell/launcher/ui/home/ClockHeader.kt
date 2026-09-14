@@ -42,10 +42,13 @@ import java.util.Locale
 fun ClockHeader(
     weather: Weather?,
     modifier: Modifier = Modifier,
+    /** Вирівнювання ззовні: дзеркало екрана перевертає годинник разом із рядками. */
+    align: AlignMode? = null,
 ) {
     val theme = LocalLauncherTheme.current
     val spec = theme.manifest.header
     if (spec.style == HeaderStyle.NONE) return
+    val effectiveAlign = align ?: spec.align
 
     val clockFont = LocalClockFont.current
 
@@ -81,12 +84,12 @@ fun ClockHeader(
         if (spec.showWeather && weather != null) add(weather.shortText)
     }.joinToString(spec.subSeparator.ifEmpty { " " })
 
-    val horizontalAlignment = when (spec.align) {
+    val horizontalAlignment = when (effectiveAlign) {
         AlignMode.START -> Alignment.Start
         AlignMode.CENTER -> Alignment.CenterHorizontally
         AlignMode.END -> Alignment.End
     }
-    val textAlign = when (spec.align) {
+    val textAlign = when (effectiveAlign) {
         AlignMode.START -> TextAlign.Start
         AlignMode.CENTER -> TextAlign.Center
         AlignMode.END -> TextAlign.End
